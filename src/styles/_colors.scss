@@ -1,0 +1,41 @@
+$tintColor: #0066FF; // newer blue since 23-09-2019
+$tintColorLight: #D9E9FD;
+$tintColorDark: #004A87;
+$black: #000000;
+$grayDarkest: #222222;
+$grayDarker: #555555;
+$grayDark: #AAAAAA;
+$gray: #C5C5C5;
+$grayLight: #e5e5e5;
+$grayLightest: #EEEEEE;
+$appBackground: #EEEEEE;
+$white: #ffffff;
+$blue: $tintColor;
+$redLight: #FF4F54;
+$red: #E9110B;
+$redDark: #b52424;
+$orange: #ffc107;
+$orangeDark: #ffc107;
+$green: #03A87C;
+
+:export {
+  tintColor: $tintColor;
+  tintColorLight: $tintColorLight;
+  tintColorDark: $tintColorDark;
+  black: $black;
+  grayDarkest: $grayDarkest;
+  grayDarker: $grayDarker;
+  grayDark: $grayDark;
+  gray: $gray;
+  grayLight: $grayLight;
+  grayLightest: $grayLightest;
+  appBackground: $appBackground;
+  white: $white;
+  blue: $tintColor;
+  redLight: $redLight;
+  red: $red;
+  redDark: $redDark;
+  orange: $orange;
+  orangeDark: $orangeDark;
+  green: $green;
+}

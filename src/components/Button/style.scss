@@ -1,0 +1,26 @@
+@import "../../styles/colors";
+
+.Button {
+  display: inline-block;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px $grayDark solid;
+  color: $black;
+  height: 25px;
+  background: none;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.Button--clean {
+  border: 0;
+  padding: 0;
+}
+
+.Button--clean svg {
+  stroke: $grayLight;
+}
+
+.Button svg {
+  width: 16px;
+}
