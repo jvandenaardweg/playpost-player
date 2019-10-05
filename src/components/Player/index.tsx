@@ -8,7 +8,7 @@ import * as analytics from '../../utils/analytics'
 
 import './index.scss'
 
-import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE } from '../../constants/urls';
+import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE, URL_PLAYPOST_WEBSITE } from '../../constants/urls';
 import { getPlatform } from '../../utils/platform';
 import { Button } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
@@ -296,7 +296,7 @@ export class Player extends React.PureComponent<Props, State> {
               </button>
             </div>
             <div className="Player__info-container">
-              <div style={{ height: '60px' }}>
+              <div>
                 <h1 className="Player__title">
                   <a href={articleUrl}>{articleTitle}</a>
                   </h1>
@@ -326,13 +326,12 @@ export class Player extends React.PureComponent<Props, State> {
                 renderTrack={({ props, children }) => (
                   <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} className="Player__range-track-container">
                     <div
-                      // {...props}
                       ref={props.ref}
                       style={{
                         ...props.style,
                         background: getTrackBackground({
                           values: [played, loaded],
-                          colors: ['#000000', '#C5C5C5', '#e5e5e5'],
+                          colors: ['#000000', '#AAAAAA', '#e5e5e5'],
                           min: this.rangeMin,
                           max: this.rangeMax
                         })
@@ -356,19 +355,16 @@ export class Player extends React.PureComponent<Props, State> {
               />
               </div>
               <div className="Player__progress-time-container">
-                <div className="Player__progress-time Player__progress-time--played">
+                <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : null}`}>
                   <Duration seconds={duration * played} />
                 </div>
-                <div className="Player__progress-time Player__progress-time--remaining">
+                <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank">Audio by <span>Playpost</span></a>
+                <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : null}`}>
                   <Duration seconds={duration * (1 - played)} />
                 </div>
               </div>
             </div>
           </div>
-          {/* <div className="Player__footer">
-            <Button onClick={this.handleOnClickSave}>Save to Playpost</Button>
-            <Button onClick={this.handleOnClickSave}><Icons.Settings /></Button>
-          </div> */}
         </div>
       </div>
     )
