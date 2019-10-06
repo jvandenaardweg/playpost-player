@@ -215,7 +215,7 @@ export class Player extends React.PureComponent<Props, State> {
 
     window.location.href = `playpost://playlist/add/${articleId}`;
 
-    const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : null
+    const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
     if (appStoreUrl) {
       analytics.trackEvent('click_save', this.props.articleId, {
@@ -284,6 +284,8 @@ export class Player extends React.PureComponent<Props, State> {
           <ReactPlayer
             ref={this.playerRef}
             className="Player__react-player"
+            width="100%"
+            height="100%"
             url={url}
             playing={isPlaying}
             controls={false}
@@ -319,7 +321,7 @@ export class Player extends React.PureComponent<Props, State> {
                 style={buttonThemeStyle}
               >
                 {isLoading && <Icons.Loading />}
-                {!isLoading && isPlaying ? <Icons.Pause /> : !isLoading ? <Icons.Play /> : null}
+                {!isLoading && isPlaying ? <Icons.Pause /> : !isLoading ? <Icons.Play /> : ''}
               </button>
             </div>
             <div className="Player__info-container">
@@ -372,7 +374,7 @@ export class Player extends React.PureComponent<Props, State> {
                 renderThumb={({ props, isDragged }) => (
                   <div {...props} className="Player__range-thumb-container">
                     <div
-                      className={`Player__range-thumb ${isDragged ? 'Player__range-thumb--is-dragging' : null}`}
+                      className={`Player__range-thumb ${isDragged ? 'Player__range-thumb--is-dragging' : ''}`}
                       style={trackThumbStyle}
                     ></div>
                     {isDragged && (
@@ -385,11 +387,11 @@ export class Player extends React.PureComponent<Props, State> {
               />
               </div>
               <div className="Player__progress-time-container">
-                <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : null}`}>
+                <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : ''}`}>
                   <Duration seconds={duration * played} />
                 </div>
                 <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank" rel="noopener noreferrer">Audio by <span>Playpost</span></a>
-                <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : null}`}>
+                <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : ''}`}>
                   <Duration seconds={duration * (1 - played)} />
                 </div>
               </div>
