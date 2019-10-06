@@ -188,6 +188,7 @@
   color: $grayDark;
   font-size: 12px;
   text-decoration: none;
+  transition: 250ms all;
 
   span {
     color: $tintColor;
@@ -195,6 +196,7 @@
 
   &:hover {
     text-decoration: underline;
+    color: $tintColor;
   }
 }
 

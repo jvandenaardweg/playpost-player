@@ -14,6 +14,16 @@ import { Button } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
 import * as Icons from '../Icons';
 
+export interface PlayerThemeOptions {
+  buttonColor: string;
+  backgroundColor: string;
+  borderColor: string;
+  titleColor: string;
+  trackBackgroundColor: string;
+  trackThumbColor: string;
+  trackLabelBackgroundColor: string;
+}
+
 interface Props {
   url: string;
   articleId: string;
@@ -22,6 +32,7 @@ interface Props {
   articleSource: string;
   voice: string;
   duration: number;
+  themeOptions: PlayerThemeOptions
 }
 
 interface State {
@@ -73,10 +84,14 @@ export class Player extends React.PureComponent<Props, State> {
   private appStoreRedirect: number | null = null
 
   componentDidMount() {
-    const { duration } = this.props
+    const { duration, themeOptions } = this.props
     const platform = getPlatform(navigator)
 
     this.setState({ duration, platform })
+
+    console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
+    console.log('Playpost Player Init: Using duration: ', duration)
+    console.log('Playpost Player Init: Using platform: ', platform)
   }
 
   componentWillUnmount() {
@@ -239,7 +254,13 @@ export class Player extends React.PureComponent<Props, State> {
 
   render () {
     const { isPlaying, volume, isMuted, played, duration, playbackRate, url, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
-    const { articleTitle, articleUrl, voice, articleSource } = this.props
+    const { articleTitle, articleUrl, voice, articleSource, themeOptions } = this.props
+
+    const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
+    const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor }
+    const titleThemeStyle: React.CSSProperties = { color: themeOptions.titleColor }
+    const trackThumbStyle: React.CSSProperties = { backgroundColor: themeOptions.trackThumbColor }
+    const trackLabelStyle: React.CSSProperties = { backgroundColor: themeOptions.trackLabelBackgroundColor }
 
     return (
       <div className="Player">
@@ -259,7 +280,7 @@ export class Player extends React.PureComponent<Props, State> {
           </Modal>
         )}
 
-        <div className="Player__container">
+        <div className="Player__container" style={playerContainerThemeStyle}>
           <ReactPlayer
             ref={this.playerRef}
             className="Player__react-player"
@@ -290,15 +311,21 @@ export class Player extends React.PureComponent<Props, State> {
 
           <div className="Player__top-container">
             <div className="Player__play-control-container">
-              <button type="button" disabled={isLoading} className="Player__play-control-button" onClick={this.handleOnClickPlayPause}>
+              <button
+                type="button"
+                disabled={isLoading}
+                className="Player__play-control-button"
+                onClick={this.handleOnClickPlayPause}
+                style={buttonThemeStyle}
+              >
                 {isLoading && <Icons.Loading />}
                 {!isLoading && isPlaying ? <Icons.Pause /> : !isLoading ? <Icons.Play /> : null}
               </button>
             </div>
             <div className="Player__info-container">
               <div>
-                <h1 className="Player__title">
-                  <a href={articleUrl}>{articleTitle}</a>
+                <h1 className="Player__title" style={titleThemeStyle}>
+                  <a href={articleUrl} style={titleThemeStyle}>{articleTitle}</a>
                   </h1>
                 <h2 className="Player__subtitle">
                   <a href={articleUrl}>{articleSource}</a>, voice: {voice}
@@ -331,7 +358,7 @@ export class Player extends React.PureComponent<Props, State> {
                         ...props.style,
                         background: getTrackBackground({
                           values: [played, loaded],
-                          colors: ['#000000', '#AAAAAA', '#e5e5e5'],
+                          colors: [themeOptions.trackBackgroundColor, '#AAAAAA', '#e5e5e5'],
                           min: this.rangeMin,
                           max: this.rangeMax
                         })
@@ -344,9 +371,12 @@ export class Player extends React.PureComponent<Props, State> {
                 )}
                 renderThumb={({ props, isDragged }) => (
                   <div {...props} className="Player__range-thumb-container">
-                    <div className={`Player__range-thumb ${isDragged ? 'Player__range-thumb--is-dragging' : null}`}></div>
+                    <div
+                      className={`Player__range-thumb ${isDragged ? 'Player__range-thumb--is-dragging' : null}`}
+                      style={trackThumbStyle}
+                    ></div>
                     {isDragged && (
-                      <div className="Player__range-thumb-label">
+                      <div className="Player__range-thumb-label" style={trackLabelStyle}>
                         <Duration seconds={duration * played} />
                       </div>
                     )}
@@ -358,7 +388,7 @@ export class Player extends React.PureComponent<Props, State> {
                 <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : null}`}>
                   <Duration seconds={duration * played} />
                 </div>
-                <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank">Audio by <span>Playpost</span></a>
+                <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank" rel="noopener noreferrer">Audio by <span>Playpost</span></a>
                 <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : null}`}>
                   <Duration seconds={duration * (1 - played)} />
                 </div>

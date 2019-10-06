@@ -1,8 +1,51 @@
 import React from 'react';
 import './App.scss';
-import { Player } from './components/Player';
+import { Player, PlayerThemeOptions } from './components/Player';
 
 const App: React.FC = () => {
+  /**
+   * Regex to check if the given color code (hex value) is correct.
+   *
+   * @param text
+   */
+  const isCorrectColorCode = (colorCode: string): boolean => {
+    const hex = `#${colorCode}`;
+    const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
+    return regex.test(hex);
+  }
+
+  const getUserDefinedPlayerThemeOptions = () => {
+    const urlParams = new window.URLSearchParams(window.location.search);
+
+    const defaultOptions: PlayerThemeOptions = {
+      buttonColor: '#0066FF', // tintColor
+      backgroundColor: '#ffffff',
+      borderColor: '#e5e5e5', // grayLight
+      titleColor: '#000000',
+      trackBackgroundColor: '#000000',
+      trackThumbColor: '#000000',
+      trackLabelBackgroundColor: '#000000'
+    }
+
+    let options: PlayerThemeOptions = {
+      ...defaultOptions
+    }
+
+    for (const [key] of Object.entries(defaultOptions)) {
+      const paramValue = urlParams.get(key)
+      if (paramValue && isCorrectColorCode(paramValue)) {
+        options = {
+          ...options,
+          [key]: `#${paramValue}`
+        }
+      }
+    }
+
+    return options
+  }
+
+  const playerThemeOptions = getUserDefinedPlayerThemeOptions()
+
   return (
     <div className="App">
       <Player
@@ -15,6 +58,7 @@ const App: React.FC = () => {
         voice="Emily (en-US)"
         articleSource="BBC News"
         duration={685.85}
+        themeOptions={playerThemeOptions}
       />
     </div>
   );
