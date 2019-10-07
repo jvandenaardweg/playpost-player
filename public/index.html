@@ -5,15 +5,6 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
@@ -29,15 +20,33 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <script>
+      window.article = {
+        id: "c67ffc85-2c6c-457d-80bd-42e1c78f500c",
+        title: "Trump Envoys Pushed Ukraine to Commit to Investigating Biden",
+        url: "https://www.nytimes.com/2019/10/03/us/politics/trump-ukraine.html?smid=nytcore-ios-share",
+        sourceName: "BBC News",
+        audiofiles: [
+          {
+            url: "https://storage.playpost.app/articles/c67ffc85-2c6c-457d-80bd-42e1c78f500c/audiofiles/test.mp3",
+            length: 685.85,
+            voice: {
+              label: "Emily",
+              languageCode: "en-US"
+            }
+          }
+        ]
+      }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+      window.audiofile = {
+        url: "https://storage.playpost.app/articles/c67ffc85-2c6c-457d-80bd-42e1c78f500c/audiofiles/test.mp3",
+        length: 685.85,
+        voice: {
+          label: "Emily",
+          languageCode: "en-US"
+        }
+      }
+    </script>
   </body>
 </html>

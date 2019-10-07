@@ -25,18 +25,19 @@ export interface PlayerThemeOptions {
 }
 
 interface Props {
-  url: string;
+  audiofileUrl: string;
   articleId: string;
   articleTitle: string;
   articleUrl: string;
-  articleSource: string;
-  voice: string;
-  duration: number;
+  articleSourceName: string;
+  voiceLabel: string;
+  voiceLanguageCode: string;
+  audiofileLength: number;
   themeOptions: PlayerThemeOptions
 }
 
 interface State {
-  url: string;
+  audiofileUrl: string;
   platform: string;
   isError: boolean;
   isLoading: boolean;
@@ -57,7 +58,7 @@ interface State {
 
 export class Player extends React.PureComponent<Props, State> {
   state = {
-    url: '',
+    audiofileUrl: '',
     platform: '',
     isError: false,
     isLoading: false,
@@ -84,13 +85,13 @@ export class Player extends React.PureComponent<Props, State> {
   private appStoreRedirect: number | null = null
 
   componentDidMount() {
-    const { duration, themeOptions } = this.props
+    const { audiofileLength, themeOptions } = this.props
     const platform = getPlatform(navigator)
 
-    this.setState({ duration, platform })
+    this.setState({ duration: audiofileLength, platform })
 
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
-    console.log('Playpost Player Init: Using duration: ', duration)
+    console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
   }
 
@@ -102,9 +103,9 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   handleOnClickPlayPause = () => {
-    const { isPlaying, url } = this.state
+    const { isPlaying, audiofileUrl } = this.state
 
-    const isLoading = !url && !this.state.isLoading;
+    const isLoading = !audiofileUrl && !this.state.isLoading;
 
     if (isPlaying) {
       analytics.trackEvent('click_pause', this.props.articleId)
@@ -112,7 +113,7 @@ export class Player extends React.PureComponent<Props, State> {
       analytics.trackEvent('click_play', this.props.articleId)
     }
 
-    this.setState({ isPlaying: !isPlaying, isLoading, url: this.props.url })
+    this.setState({ isPlaying: !isPlaying, isLoading, audiofileUrl: this.props.audiofileUrl })
   }
 
   handleVolumeChange = (e: any) => {
@@ -253,8 +254,8 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   render () {
-    const { isPlaying, volume, isMuted, played, duration, playbackRate, url, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
-    const { articleTitle, articleUrl, voice, articleSource, themeOptions } = this.props
+    const { isPlaying, volume, isMuted, played, duration, playbackRate, audiofileUrl, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
+    const { articleTitle, articleUrl, voiceLabel, articleSourceName, themeOptions, voiceLanguageCode } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
     const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor }
@@ -286,7 +287,7 @@ export class Player extends React.PureComponent<Props, State> {
             className="Player__react-player"
             width="100%"
             height="100%"
-            url={url}
+            url={audiofileUrl}
             playing={isPlaying}
             controls={false}
             playbackRate={playbackRate}
@@ -330,7 +331,7 @@ export class Player extends React.PureComponent<Props, State> {
                   <a href={articleUrl} style={titleThemeStyle}>{articleTitle}</a>
                   </h1>
                 <h2 className="Player__subtitle">
-                  <a href={articleUrl}>{articleSource}</a>, voice: {voice}
+                  <a href={articleUrl}>{articleSourceName}</a>, voice: {voiceLabel} ({voiceLanguageCode})
                 </h2>
               </div>
               <div className="Player__action">
