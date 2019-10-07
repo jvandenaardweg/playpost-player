@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src-server",
+    "importHelpers": true,
+    "emitDecoratorMetadata": true, // typeOrm requirement
+    "experimentalDecorators": true, // typeOrm requirement
+    "allowJs": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "isolatedModules": false,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "declaration": true,
+    "stripInternal": true,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "lib": ["es5", "es6", "dom.iterable", "dom"], // es6 = typeOrm requirement
+    "moduleResolution": "node",
+    "noEmit": true,
+    "outDir": "dist",
+    "target": "es2018", // For puppeteer -> https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#code-transpilation-issues
+    "module": "commonjs",
+    "removeComments": true,
+    "incremental": true,
+    "skipLibCheck": true, // Fix conflict with node types: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16825
+    "plugins": [
+      { "name": "typescript-tslint-plugin" }
+    ],
+    "types": ["node", "jest"]
+  },
+  "include": ["./src-server"],
+  "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts"]
+}
