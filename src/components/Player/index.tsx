@@ -86,7 +86,7 @@ export class Player extends React.PureComponent<Props, State> {
   private rangeStep = 0.0001;
 
   private appStoreRedirect: number | null = null
-  private playerjs: any = {};
+  private playerjsReceiver: any = {};
 
   componentDidMount() {
     const { audiofileLength, themeOptions } = this.props
@@ -114,29 +114,68 @@ export class Player extends React.PureComponent<Props, State> {
    */
   setupPlayerJSInteractions = () => {
     // TEST AT: http://playerjs.io/test.html
-    this.playerjs = new playerjs.Player('iframe')
+    this.playerjsReceiver = new playerjs.Receiver();
 
-    this.playerjs.on(playerjs.Events.READY, () => console.log('ready'));
-    this.playerjs.on(playerjs.Events.PLAY, () => console.log('play'));
-    this.playerjs.on(playerjs.Events.PAUSE, () => console.log('pause'));
-    this.playerjs.on(playerjs.Events.ENDED, () => console.log('ended'));
-    this.playerjs.on(playerjs.Events.TIMEUPDATE, () => console.log('timeupdate'));
-    this.playerjs.on(playerjs.Events.PROGRESS, () => console.log('progress'));
-    this.playerjs.on(playerjs.Events.ERROR, () => console.log('error'));
+    this.playerjsReceiver.on('play', () => {
+      this.playAudio()
+      this.playerjsReceiver.emit('play');
+    });
+
+    this.playerjsReceiver.on('pause', () => {
+      this.pauseAudio();
+      this.playerjsReceiver.emit('pause');
+    });
+
+    // this.playerjsReceiver.on('getDuration', callback => callback(video.duration));
+
+    // this.playerjsReceiver.on('getVolume', callback => callback(video.volume*100));
+
+    // this.playerjsReceiver.on('setVolume', value => video.volume = (value/100));
+
+    // this.playerjsReceiver.on('mute', () => video.mute = true)
+
+    // this.playerjsReceiver.on('unmute', () => video.mute = false);
+
+    // this.playerjsReceiver.on('getMuted', callback => callback(video.mute));
+
+    // this.playerjsReceiver.on('getLoop', callback => callback(video.loop));
+
+    // this.playerjsReceiver.on('setLoop', value => video.loop = value);
+
+    this.playerjsReceiver.on(playerjs.Events.READY, () => console.log('ready'));
+    this.playerjsReceiver.on(playerjs.Events.PLAY, () => console.log('play'));
+    this.playerjsReceiver.on(playerjs.Events.PAUSE, () => console.log('pause'));
+    this.playerjsReceiver.on(playerjs.Events.ENDED, () => console.log('ended'));
+    this.playerjsReceiver.on(playerjs.Events.TIMEUPDATE, () => console.log('timeupdate'));
+    this.playerjsReceiver.on(playerjs.Events.PROGRESS, () => console.log('progress'));
+    this.playerjsReceiver.on(playerjs.Events.ERROR, () => console.log('error'));
   }
 
-  handleOnClickPlayPause = () => {
-    const { isPlaying, audiofileUrl } = this.state
+  playAudio = () => {
+    const { audiofileUrl } = this.state
+    const { articleId } = this.props
 
     const isLoading = !audiofileUrl && !this.state.isLoading;
 
+    analytics.trackEvent('click_play', articleId)
+
+    this.setState({ isPlaying: true, isLoading, audiofileUrl: this.props.audiofileUrl })
+  }
+
+  pauseAudio = () => {
+    const { articleId } = this.props
+    analytics.trackEvent('click_pause', articleId)
+    this.setState({ isPlaying: false, isLoading: false })
+  }
+
+  handleOnClickPlayPause = () => {
+    const { isPlaying } = this.state
+
     if (isPlaying) {
-      analytics.trackEvent('click_pause', this.props.articleId)
-    } else {
-      analytics.trackEvent('click_play', this.props.articleId)
+      return this.pauseAudio();
     }
 
-    this.setState({ isPlaying: !isPlaying, isLoading, audiofileUrl: this.props.audiofileUrl })
+    return this.playAudio();
   }
 
   handleVolumeChange = (e: any) => {
