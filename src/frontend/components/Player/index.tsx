@@ -48,6 +48,7 @@ interface State {
   isMuted: boolean;
   isSeeking: boolean;
   isReady: boolean;
+  isLooped: boolean;
   showAppStoresModal: boolean;
   showSettingsModal: boolean;
   volume: number;
@@ -69,6 +70,7 @@ export class Player extends React.PureComponent<Props, State> {
     isMuted: false,
     isSeeking: false,
     isReady: false,
+    isLooped: false,
     showAppStoresModal: false,
     showSettingsModal: false,
     volume: 1.0,
@@ -114,7 +116,7 @@ export class Player extends React.PureComponent<Props, State> {
    */
   setupPlayerJSInteractions = () => {
     // TEST AT: http://playerjs.io/test.html
-    const { volume, duration, isPlaying, isMuted } = this.state;
+    // You can use the localhost url in the test
 
     this.playerjsReceiver.on('play', () => {
       this.playAudio()
@@ -136,21 +138,42 @@ export class Player extends React.PureComponent<Props, State> {
       this.playerjsReceiver.emit('unmute');
     });
 
+    this.playerjsReceiver.on('setVolume', (value: number) => {
+      this.setState({ volume: value / 100 })
+    });
+
+    this.playerjsReceiver.on('setCurrentTime', (value: number) => {
+      this.playerRef.current && this.playerRef.current.seekTo(value)
+    });
+
+    this.playerjsReceiver.on('getCurrentTime', (callback: any) => {
+      return callback(Math.floor(this.state.playedSeconds))
+    });
+
     this.playerjsReceiver.on('getPaused', (callback: any) => {
-      const isPaused = !isPlaying
+      const isPaused = !this.state.isPlaying
       return callback(isPaused)
     });
 
     this.playerjsReceiver.on('getDuration', (callback: any) => {
-      return callback(duration)
+      return callback(this.state.duration)
     });
 
     this.playerjsReceiver.on('getVolume', (callback: any) => {
-      return callback(volume)
+      console.log(this.state.volume * 100)
+      return callback(this.state.volume * 100)
     });
 
     this.playerjsReceiver.on('getMuted', (callback: any) => {
-      return callback(isMuted)
+      return callback(this.state.isMuted)
+    });
+
+    this.playerjsReceiver.on('getLoop', (callback: any) => {
+      return callback(this.state.isLooped)
+    });
+
+    this.playerjsReceiver.on('setLoop', (value: boolean) => {
+      this.setState({ isLooped: value })
     });
 
     this.playerjsReceiver.ready();
@@ -173,6 +196,14 @@ export class Player extends React.PureComponent<Props, State> {
 
   unmuteAudio = () => {
     this.setState({ isMuted: false })
+  }
+
+  loopAudio = () => {
+    this.setState({ isLooped: true })
+  }
+
+  unloopAudio = () => {
+    this.setState({ isLooped: false })
   }
 
   pauseAudio = () => {
@@ -336,7 +367,7 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   render () {
-    const { isPlaying, volume, isMuted, played, duration, playbackRate, audiofileUrl, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
+    const { isPlaying, volume, isMuted, isLooped, played, duration, playbackRate, audiofileUrl, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
     const { articleTitle, articleUrl, voiceLabel, articleSourceName, themeOptions, voiceLanguageCode } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
@@ -376,7 +407,7 @@ export class Player extends React.PureComponent<Props, State> {
             volume={volume}
             muted={isMuted}
             progressInterval={1000}
-            loop={false}
+            loop={isLooped}
             config={{
               file: {
                 forceAudio: true
