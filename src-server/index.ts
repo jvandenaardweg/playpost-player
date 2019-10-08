@@ -18,7 +18,10 @@ ejs.delimiter = '$';
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
-app.use(express.static(path.join(__dirname, '../build-frontend')));
+app.use(express.static(path.join(__dirname, '../build-frontend'), {
+  cacheControl: true,
+  maxAge: 31536000,
+}));
 
 app.get('/ping', (req: Request, res: Response) => {
   return res.send('pong');
