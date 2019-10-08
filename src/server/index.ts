@@ -56,6 +56,99 @@ app.get('/ping', (req: Request, res: Response) => {
   return res.send('pong');
 });
 
+app.get('/oembed', async (req: Request, res: Response) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  // More info: https://oembed.com/
+
+  const { url } = req.query;
+
+  try {
+    const cacheKey = `articles/${url}`;
+
+    const cachedPage = cache.get(cacheKey)
+
+    // If we have a cached version, return that
+    if (cachedPage) {
+      console.log(url, `Returning cached version.`)
+      return res.send(cachedPage)
+    }
+
+    console.log(url, `Getting article from API...`)
+
+    const response = await nodeFetch(`${process.env.API_URL}/v1/articles?url=${url}`, {
+      method: 'get',
+      headers: {
+        'X-Api-Key': process.env.API_KEY || '',
+        'X-Api-Secret': process.env.API_SECRET || ''
+      }
+    })
+
+    if (!response.ok) {
+      const json = await response.json()
+      throw new Error(json.message ? json.message : 'Did not got ok from api')
+    }
+
+    const article: Api.Article = await response.json()
+
+    // TODO: how do we determine which audiofile to return?
+    const audiofile = article.audiofiles[0]
+
+    if (!audiofile) {
+      return res.status(404).json({
+        message: 'Article has no audio yet.'
+      })
+    }
+
+    // TODO: Use article URL to get
+
+    const responseToSend = {
+      version: '1.0',
+      type: 'rich',
+      provider_name: 'Playpost',
+      provider_url: 'https://playpost.app',
+      width: 480,
+      height: 155, // Height in frontend/Player/index.scss
+      title: article.title,
+      author_name: article.sourceName,
+      author_url: article.canonicalUrl || article.url,
+      html: `<iframe src="https://embed.playpost.app/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
+    }
+
+    cache.set(cacheKey, responseToSend, 60);
+
+    console.log(url, `Returning oembed data.`)
+
+    return res.json(responseToSend);
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({
+      message: 'An uknown error happened.'
+    })
+  }
+
+
+  // {
+  //   "version": "1.0",
+  //   "type": "video",
+  //   "provider_name": "YouTube",
+  //   "provider_url": "http://youtube.com/",
+  //   "width": 425,
+  //   "height": 344,
+  //   "title": "Amazing Nintendo Facts",
+  //   "author_name": "ZackScott",
+  //   "author_url": "http://www.youtube.com/user/ZackScott",
+  //   "html":
+  //     "<object width=\"425\" height=\"344\">
+  //       <param name=\"movie\" value=\"http://www.youtube.com/v/M3r2XDceM6A&fs=1\"></param>
+  //       <param name=\"allowFullScreen\" value=\"true\"></param>
+  //       <param name=\"allowscriptaccess\" value=\"always\"></param>
+  //       <embed src=\"http://www.youtube.com/v/M3r2XDceM6A&fs=1\"
+  //         type=\"application/x-shockwave-flash\" width=\"425\" height=\"344\"
+  //         allowscriptaccess=\"always\" allowfullscreen=\"true\"></embed>
+  //     </object>",
+  // }
+})
+
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
