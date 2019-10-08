@@ -1,0 +1,24 @@
+version: v1.0
+name: Deploy to PRODUCTION
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: playpost-embed-secrets
+      prologue:
+        commands:
+          - checkout
+      jobs:
+        - name: Push to Production
+          commands:
+            - ssh-keyscan 142.93.224.140 >> ~/.ssh/known_hosts
+            - chmod 600 ~/.ssh/id_rsa_semaphoreci
+            - ssh-add ~/.ssh/id_rsa_semaphoreci
+            - git remote add dokku dokku@142.93.224.140:playpost-embed-production # IP address as remote is used, as CloudFlare does not support ssh/git
+            - git push dokku master & # "&" so we don't have to wait for deployment status
+            - sleep 30 # Sleep a little, to make sure git pushed. It seems like a git push isn't landing correctly sometimes.
+

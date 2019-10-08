@@ -1,0 +1,55 @@
+version: v1.0
+name: Install, Build, Test & Release
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Install & Build
+    dependencies: []
+    skip:
+      when: "branch != 'master' AND branch != 'develop'"
+    task:
+      jobs:
+        - name: Install & build TypeScript
+          commands:
+            - checkout
+            - nvm use
+            - node --version
+            - npm --version
+            - cache restore node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-modules-$SEMAPHORE_GIT_BRANCH,node-modules-master
+            - npm install
+            - cache store node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json) node_modules
+            - npm run build
+  # - name: Test
+  #   dependencies: ["Install & Build"]
+  #   skip:
+  #     when: "branch != 'master' AND branch != 'develop'"
+  #   task:
+  #     secrets:
+  #       - name: playpost-embed-secrets
+  #     prologue:
+  #       commands:
+  #         - checkout
+  #         - cache restore node-modules-$SEMAPHORE_GIT_BRANCH-$(checksum package-lock.json),node-modules-$SEMAPHORE_GIT_BRANCH,node-modules-master
+  #         - nvm use
+  #         - node --version
+  #         - npm --version
+  #     jobs:
+  #       - name: Run all tests
+  #         commands:
+  #           - npm run test
+
+promotions:
+  - name: Deploy to Production
+    pipeline_file: deploy-production.yml
+    auto_promote_on:
+      - result: passed
+        branch:
+          - master
+  - name: Deploy to Test
+    pipeline_file: deploy-test.yml
+    auto_promote_on:
+      - result: passed
+        branch:
+          - develop
