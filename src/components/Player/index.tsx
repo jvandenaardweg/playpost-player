@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactPlayer from 'react-player';
 import { Range, getTrackBackground } from 'react-range';
+import { version } from '../../../package.json';
 
 import { Duration } from '../Duration';
 
@@ -90,6 +91,7 @@ export class Player extends React.PureComponent<Props, State> {
 
     this.setState({ duration: audiofileLength, platform })
 
+    console.log('Playpost Player Init: Version: ', version)
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
     console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
