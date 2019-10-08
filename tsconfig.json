@@ -1,19 +1,23 @@
 {
   "compilerOptions": {
+    "composite": true,
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
+    // "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    // "isolatedModules": true,
     "jsx": "react",
-    "noEmit": true
+    "noEmit": true,
+    "rootDir": "./src",
+    "typeRoots" : ["./src/@types"]
   },
   "include": [
-    "./src/**/*"
+    "./src",
+    "./package.json"
   ]
 }

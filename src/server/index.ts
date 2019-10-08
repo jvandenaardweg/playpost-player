@@ -4,6 +4,7 @@ import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
 import NodeCache from 'node-cache';
+import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 
@@ -42,7 +43,7 @@ app.use(rateLimiter)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
-app.use(express.static(path.join(__dirname, '../build-frontend'), {
+app.use(serveStatic(path.join(__dirname, '../build-frontend/static'), {
   cacheControl: true,
   maxAge: 31536000,
 }));
