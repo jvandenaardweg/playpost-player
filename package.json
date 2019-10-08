@@ -79,9 +79,11 @@
     "dev:frontend": "node scripts/start.js",
     "build:frontend": "node scripts/build.js",
     "test:frontend": "node scripts/test.js",
-    "build:server": "npx tsc --p tsconfig-server.production.json",
+    "build:server": "npx tsc -p tsconfig-server.production.json",
     "dev:server": "ts-node-dev -r dotenv/config --inspect --respawn --transpileOnly --project ./tsconfig-server.json ./src-server/index.ts",
-    "start:server": "forever -m 5 dist/index.js"
+    "start:server": "forever -m 5 ./build-server/index.js",
+    "build": "npm run build:frontend && npm run build:server",
+    "start": "npm run start:server"
   },
   "eslintConfig": {
     "extends": "react-app"

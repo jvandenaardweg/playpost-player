@@ -10,6 +10,7 @@
 
 # production
 /build
+/build-frontend
 /build-server
 
 # misc
