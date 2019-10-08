@@ -4,6 +4,7 @@ import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
 import NodeCache from 'node-cache';
+import helmet from 'helmet';
 
 import { Api } from '../@types/playpost-api';
 
@@ -14,6 +15,8 @@ const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true
 // Set custom ejs delimiter
 // Use: <$- article $>
 ejs.delimiter = '$';
+
+app.use(helmet())
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
