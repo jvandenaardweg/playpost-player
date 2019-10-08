@@ -7,8 +7,12 @@ import NodeCache from 'node-cache';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 
-import { getRealUserIpAddress } from './utils/ip-address';
 import { Api } from '../@types/playpost-api';
+import { version } from '../../package.json'
+
+import { getRealUserIpAddress } from './utils/ip-address';
+
+console.log('Server Init: Version: ', version)
 
 const app = express();
 

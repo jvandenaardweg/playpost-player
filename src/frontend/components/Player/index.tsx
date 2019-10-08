@@ -3,7 +3,7 @@ import ReactPlayer from 'react-player';
 import { Range, getTrackBackground } from 'react-range';
 import playerjs from 'player.js';
 
-import { version } from '../../../package.json';
+import { version } from '../../../../package.json';
 
 import { Duration } from '../Duration';
 

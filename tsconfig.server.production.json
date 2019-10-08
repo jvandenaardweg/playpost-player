@@ -1,5 +1,5 @@
 {
-  "extends": "./tsconfig-server",
+  "extends": "./tsconfig.server",
   "compilerOptions": {
     "noEmit": false,
     "sourceMap": true,

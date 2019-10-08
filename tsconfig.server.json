@@ -5,6 +5,7 @@
     "emitDecoratorMetadata": true, // typeOrm requirement
     "experimentalDecorators": true, // typeOrm requirement
     "allowJs": false,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "isolatedModules": false,
@@ -31,6 +32,6 @@
     ],
     "types": ["node", "jest"]
   },
-  "include": ["src-server/**/*", "@types"],
+  "include": ["./src/server"],
   "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts", "./src-server/pages/**"]
 }
