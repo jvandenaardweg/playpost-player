@@ -99,6 +99,15 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
 
 });
 
+// Catch-all
+// app.all('/index.html', (req: Request, res: Response) => {
+//   return res.status(404).send('Not found.');
+// })
+
+app.all('*', (req: Request, res: Response) => {
+  return res.status(404).send('Not found.');
+})
+
 const port = process.env.PORT || 8080;
 
 console.log('Server init on port:', port);
