@@ -42,6 +42,8 @@ app.use(helmet({
 
 app.use(rateLimiter)
 
+app.set('etag', false)
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
@@ -55,6 +57,8 @@ app.get('/ping', (req: Request, res: Response) => {
 });
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
   const { articleId, audiofileId } = req.params;
 
   if (!articleId) {
