@@ -18,7 +18,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "outDir": "./build-frontend"
+    "outDir": "./build-frontend",
+    "types": ["./src/typings/playpost-api"]
   },
   "include": [
     "src",

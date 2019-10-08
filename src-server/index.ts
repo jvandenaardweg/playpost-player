@@ -15,6 +15,8 @@ app.set('views', path.join(__dirname, './'))
 
 app.use(express.static(path.join(__dirname, '../build-frontend')));
 
+const API_URL = process.env.NODE_ENV === 'production' ? 'https://api.playpost.app' : 'http://localhost:3000';
+
 app.get('/ping', (req: Request, res: Response) => {
   return res.send('pong');
 });
@@ -41,7 +43,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   }
 
   try {
-    const response = await nodeFetch(`http://localhost:3000/v1/articles/${articleId}`, {
+    const response = await nodeFetch(`${API_URL}/v1/articles/${articleId}`, {
       method: 'get',
       headers: {
         'X-Api-Key': '6892e59af722a2afa7147b348ba71100e56351bf3689cebc155c22db5b8c1d70',
