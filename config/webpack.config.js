@@ -340,6 +340,7 @@ module.exports = function(webpackEnv) {
         // It's important to do this before Babel processes the JS.
         {
           test: /\.(js|mjs|jsx|ts|tsx)$/,
+          exclude: paths.appEjs,
           enforce: 'pre',
           use: [
             {
@@ -376,6 +377,7 @@ module.exports = function(webpackEnv) {
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               include: paths.appSrc,
+              exclude: paths.appEjs,
               loader: require.resolve('babel-loader'),
               options: {
                 customize: require.resolve(
@@ -408,7 +410,10 @@ module.exports = function(webpackEnv) {
             // Unlike the application JS, we only compile the standard ES features.
             {
               test: /\.(js|mjs)$/,
-              exclude: /@babel(?:\/|\\{1,2})runtime/,
+              exclude: [
+                /@babel(?:\/|\\{1,2})runtime/,
+                paths.appEjs,
+              ],
               loader: require.resolve('babel-loader'),
               options: {
                 babelrc: false,
@@ -506,11 +511,11 @@ module.exports = function(webpackEnv) {
               // its runtime that would otherwise be processed through "file" loader.
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
+              exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.ejs$/, /\.json$/],
               options: {
                 name: 'static/media/[name].[hash:8].[ext]',
               },
-            },
+            }
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before the "file" loader.
           ],
@@ -525,6 +530,32 @@ module.exports = function(webpackEnv) {
           {
             inject: true,
             template: paths.appHtml,
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        )
+      ),
+      new HtmlWebpackPlugin(
+        Object.assign(
+          {},
+          {
+            inject: true,
+            filename: 'index.ejs',
+            template: paths.appEjs
           },
           isEnvProduction
             ? {

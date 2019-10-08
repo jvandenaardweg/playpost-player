@@ -10,7 +10,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, '../build')));
 
 app.get('/ping', (req: Request, res: Response) => {
   return res.send('pong');
@@ -94,8 +94,11 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       return res.status(404).send(errorPageRendered);
     }
 
+    // @ts-ignore
+    ejs.delimiter = '$';
+
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(__dirname + '/pages/embed.ejs', {
+    const embedPageRendered = await ejs.renderFile(__dirname + '/../build/index.ejs', {
       title: article.title,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
