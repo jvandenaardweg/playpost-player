@@ -83,7 +83,8 @@
     "dev:server": "ts-node-dev -r dotenv/config --inspect --respawn --transpileOnly --project ./tsconfig-server.json ./src-server/index.ts",
     "start:server": "forever -m 5 ./build-server/index.js",
     "build": "npm run build:frontend && npm run build:server",
-    "start": "npm run start:server"
+    "start": "npm run start:server",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"
