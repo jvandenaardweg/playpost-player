@@ -113,7 +113,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     }
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../build-frontend/index.ejs'), {
+    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../build-frontend/index.ejs'), {
       title: article.title,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
