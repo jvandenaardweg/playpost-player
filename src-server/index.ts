@@ -2,9 +2,13 @@ import express, { Request, Response } from 'express'
 import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
+import NodeCache from 'node-cache';
+
 import { Api } from '../@types/playpost-api';
 
 const app = express();
+
+const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
 // Set custom ejs delimiter
 // Use: <$- article $>
@@ -41,6 +45,17 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   }
 
   try {
+    const cacheKey = `articles/${articleId}`;
+    const cachedPage = cache.get(cacheKey)
+
+    // If we have a cached version, return that
+    if (cachedPage) {
+      console.log(articleId, `Returning cached version.`)
+      return res.send(cachedPage)
+    }
+
+    console.log(articleId, `Getting article from API...`)
+
     const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
       method: 'get',
       headers: {
@@ -74,13 +89,17 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       audiofile: JSON.stringify(audiofile),
     })
 
+    cache.set(cacheKey, embedPageRendered, 60); // Cache page for 60 seconds
+
+    console.log(articleId, `Returning rendered embed page.`)
+
     // Send the HTML page to the user
     return res.send(embedPageRendered)
   } catch (err) {
     const isApiUnavailable = err && err.code === 'ECONNREFUSED'
     const errorMessage = err && err.message
 
-    console.log(err)
+    console.log(articleId, err)
 
     const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
     const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
