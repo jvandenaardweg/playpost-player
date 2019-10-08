@@ -1,22 +1,39 @@
 import 'dotenv/config';
-import express, { Request, Response } from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
 import NodeCache from 'node-cache';
 import helmet from 'helmet';
+import ExpressRateLimit from 'express-rate-limit';
 
+import { getRealUserIpAddress } from './utils/ip-address';
 import { Api } from '../@types/playpost-api';
 
 const app = express();
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
+const rateLimiter = new ExpressRateLimit({
+  // We'll use the in-memory cache, not Redis
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // 30 requests allowed per minute, so at most: 1 per every 2 seconds
+  keyGenerator: (req: Request) => {
+    const ipAddressOfUser = getRealUserIpAddress(req);
+    return ipAddressOfUser;
+  },
+  handler: (req: Request, res: Response, next: NextFunction) => {
+    return res.status(429).send('Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again later.');
+  }
+});
+
 // Set custom ejs delimiter
 // Use: <$- article $>
 ejs.delimiter = '$';
 
 app.use(helmet())
+
+app.use(rateLimiter)
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
