@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { Request, Response } from 'express'
 import path from 'path';
 import ejs from 'ejs';
@@ -27,7 +28,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   const { articleId, audiofileId } = req.params;
 
   if (!articleId) {
-    const errorPageRendered = await ejs.renderFile(__dirname + '/pages/error.ejs', {
+    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
       description: 'Please given an article ID.'
     })
@@ -36,7 +37,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   }
 
   if (!audiofileId) {
-    const errorPageRendered = await ejs.renderFile(__dirname + '/pages/error.ejs', {
+    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
       description: 'Please given an audiofile ID for the article.'
     })
@@ -75,7 +76,8 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     const audiofile = article.audiofiles.find(audiofile => audiofile.id === audiofileId);
 
     if (!audiofile) {
-      const errorPageRendered = await ejs.renderFile(__dirname + '/pages/error.ejs', {
+      // TODO: make sure error.ejs is in build-server
+      const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
         title: 'Oops!',
         description: 'Could not find the audiofile in the article data.'
       })
@@ -83,7 +85,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     }
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(__dirname + '/../build-frontend/index.ejs', {
+    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../build-frontend/index.ejs'), {
       title: article.title,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
@@ -104,7 +106,8 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
     const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
 
-    const errorPageRendered = await ejs.renderFile(__dirname + '/pages/error.ejs', {
+    // TODO: make sure error.ejs is in build-server
+    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title,
       description
     })
