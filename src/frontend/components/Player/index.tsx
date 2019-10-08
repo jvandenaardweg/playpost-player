@@ -114,6 +114,7 @@ export class Player extends React.PureComponent<Props, State> {
    */
   setupPlayerJSInteractions = () => {
     // TEST AT: http://playerjs.io/test.html
+    const { volume, duration, isPlaying, isMuted } = this.state;
 
     this.playerjsReceiver.on('play', () => {
       this.playAudio()
@@ -125,21 +126,31 @@ export class Player extends React.PureComponent<Props, State> {
       this.playerjsReceiver.emit('pause');
     });
 
+    this.playerjsReceiver.on('mute', () => {
+      this.muteAudio();
+      this.playerjsReceiver.emit('mute');
+    });
+
+    this.playerjsReceiver.on('unmute', () => {
+      this.unmuteAudio();
+      this.playerjsReceiver.emit('unmute');
+    });
+
     this.playerjsReceiver.on('getPaused', (callback: any) => {
-      const isPaused = !this.state.isPlaying
+      const isPaused = !isPlaying
       return callback(isPaused)
     });
 
     this.playerjsReceiver.on('getDuration', (callback: any) => {
-      return callback(this.state.duration)
+      return callback(duration)
     });
 
     this.playerjsReceiver.on('getVolume', (callback: any) => {
-      return callback(this.state.volume)
+      return callback(volume)
     });
 
     this.playerjsReceiver.on('getMuted', (callback: any) => {
-      return callback(this.state.isMuted)
+      return callback(isMuted)
     });
 
     this.playerjsReceiver.ready();
@@ -154,6 +165,14 @@ export class Player extends React.PureComponent<Props, State> {
     analytics.trackEvent('click_play', articleId)
 
     this.setState({ isPlaying: true, isLoading, audiofileUrl: this.props.audiofileUrl })
+  }
+
+  muteAudio = () => {
+    this.setState({ isMuted: true })
+  }
+
+  unmuteAudio = () => {
+    this.setState({ isMuted: false })
   }
 
   pauseAudio = () => {
