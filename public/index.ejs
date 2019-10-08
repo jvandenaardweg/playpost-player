@@ -4,14 +4,25 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <title>Playpost</title>
+    <title><%- title %> | Playpost</title>
+    <meta name="twitter:card" content="player" />
+    <meta name="twitter:player" content="<%- embedUrl %>" />
+    <meta name="twitter:site" content="@playpostapp" />
+    <meta name="twitter:image" content="<%- imageUrl %>" />
+    <meta name="twitter:title" content="<%- title %>" />
+    <meta name="twitter:player:width" content="480" />
+    <meta name="twitter:player:height" content="155" />
+    <meta property="og:url" content="<%- embedUrl %>" />
+    <meta property="og:title" content="<%- title %>" />
+    <meta property="og:description" content="<%- description %>" />
+    <meta property="og:image" content="<%- imageUrl %>" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script>
-      window.article = <$- article $>
-      window.audiofile = <$- audiofile $>
+      window.article = <%- article %>
+      window.audiofile = <%- audiofile %>
     </script>
   </body>
 </html>

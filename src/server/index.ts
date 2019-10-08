@@ -17,6 +17,8 @@ console.log('Server Init: Version: ', version)
 
 const app = express();
 
+const EMBED_BASE_URL = process.env.EMBED_BASE_URL || 'https://embed.playpost.app';
+
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
 const rateLimiter = new ExpressRateLimit({
@@ -34,7 +36,7 @@ const rateLimiter = new ExpressRateLimit({
 
 // Set custom ejs delimiter
 // Use: <$- article $>
-ejs.delimiter = '$';
+// ejs.delimiter = '$';
 
 app.use(helmet({
   frameguard: false // We need iframe support enabled for the embed
@@ -123,7 +125,8 @@ app.get('/oembed', async (req: Request, res: Response) => {
       title: article.title,
       author_name: article.sourceName,
       author_url: article.canonicalUrl || article.url,
-      html: `<iframe src="https://embed.playpost.app/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
+      thumbnail_url: article.imageUrl,
+      html: `<iframe src="${EMBED_BASE_URL}/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
     }
 
     cache.set(cacheKey, responseToSend, 60);
@@ -226,8 +229,11 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     // Render the embed page with the article API data inside, so React can use that data to render the player
     const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
       title: article.title,
+      description: article.description,
+      imageUrl: article.imageUrl,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
+      embedUrl: `${EMBED_BASE_URL}${req.url}`
     })
 
     cache.set(cacheKey, embedPageRendered, 60); // Cache page for 60 seconds

@@ -555,7 +555,7 @@ module.exports = function(webpackEnv) {
           {
             inject: true,
             filename: 'index.ejs',
-            template: paths.appEjs
+            template: `!!raw-loader!${paths.appEjs}`
           },
           isEnvProduction
             ? {
