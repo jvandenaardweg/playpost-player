@@ -124,6 +124,25 @@ export class Player extends React.PureComponent<Props, State> {
       this.pauseAudio();
       this.playerjsReceiver.emit('pause');
     });
+
+    this.playerjsReceiver.on('getPaused', (callback: any) => {
+      const isPaused = !this.state.isPlaying
+      return callback(isPaused)
+    });
+
+    this.playerjsReceiver.on('getDuration', (callback: any) => {
+      return callback(this.state.duration)
+    });
+
+    this.playerjsReceiver.on('getVolume', (callback: any) => {
+      return callback(this.state.volume)
+    });
+
+    this.playerjsReceiver.on('getMuted', (callback: any) => {
+      return callback(this.state.isMuted)
+    });
+
+    this.playerjsReceiver.ready();
   }
 
   playAudio = () => {
