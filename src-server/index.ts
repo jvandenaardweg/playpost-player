@@ -44,8 +44,8 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
     const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
       method: 'get',
       headers: {
-        'X-Api-Key': process.env.API_KEY,
-        'X-Api-Secret': process.env.API_SECRET
+        'X-Api-Key': process.env.API_KEY || '',
+        'X-Api-Secret': process.env.API_SECRET || ''
       }
     })
 
