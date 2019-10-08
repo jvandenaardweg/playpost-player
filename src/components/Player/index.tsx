@@ -124,30 +124,6 @@ export class Player extends React.PureComponent<Props, State> {
       this.pauseAudio();
       this.playerjsReceiver.emit('pause');
     });
-
-    // this.playerjsReceiver.on('getDuration', callback => callback(video.duration));
-
-    // this.playerjsReceiver.on('getVolume', callback => callback(video.volume*100));
-
-    // this.playerjsReceiver.on('setVolume', value => video.volume = (value/100));
-
-    // this.playerjsReceiver.on('mute', () => video.mute = true)
-
-    // this.playerjsReceiver.on('unmute', () => video.mute = false);
-
-    // this.playerjsReceiver.on('getMuted', callback => callback(video.mute));
-
-    // this.playerjsReceiver.on('getLoop', callback => callback(video.loop));
-
-    // this.playerjsReceiver.on('setLoop', value => video.loop = value);
-
-    this.playerjsReceiver.on(playerjs.Events.READY, () => console.log('ready'));
-    this.playerjsReceiver.on(playerjs.Events.PLAY, () => console.log('play'));
-    this.playerjsReceiver.on(playerjs.Events.PAUSE, () => console.log('pause'));
-    this.playerjsReceiver.on(playerjs.Events.ENDED, () => console.log('ended'));
-    this.playerjsReceiver.on(playerjs.Events.TIMEUPDATE, () => console.log('timeupdate'));
-    this.playerjsReceiver.on(playerjs.Events.PROGRESS, () => console.log('progress'));
-    this.playerjsReceiver.on(playerjs.Events.ERROR, () => console.log('error'));
   }
 
   playAudio = () => {
