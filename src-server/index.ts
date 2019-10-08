@@ -45,7 +45,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   }
 
   try {
-    const cacheKey = `articles/${articleId}`;
+    const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
     const cachedPage = cache.get(cacheKey)
 
     // If we have a cached version, return that
