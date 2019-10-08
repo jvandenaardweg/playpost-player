@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactPlayer from 'react-player';
 import { Range, getTrackBackground } from 'react-range';
+import playerjs from 'player.js';
+
 import { version } from '../../../package.json';
 
 import { Duration } from '../Duration';
@@ -84,6 +86,7 @@ export class Player extends React.PureComponent<Props, State> {
   private rangeStep = 0.0001;
 
   private appStoreRedirect: number | null = null
+  private playerjs: any = {};
 
   componentDidMount() {
     const { audiofileLength, themeOptions } = this.props
@@ -95,6 +98,8 @@ export class Player extends React.PureComponent<Props, State> {
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
     console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
+
+    this.setupPlayerJSInteractions()
   }
 
   componentWillUnmount() {
@@ -102,6 +107,22 @@ export class Player extends React.PureComponent<Props, State> {
       window.clearTimeout(this.appStoreRedirect)
       this.appStoreRedirect = null
     }
+  }
+
+  /**
+   * Setup our Player to work through Embed.ly
+   */
+  setupPlayerJSInteractions = () => {
+    // TEST AT: http://playerjs.io/test.html
+    this.playerjs = new playerjs.Player('iframe')
+
+    this.playerjs.on(playerjs.Events.READY, () => console.log('ready'));
+    this.playerjs.on(playerjs.Events.PLAY, () => console.log('play'));
+    this.playerjs.on(playerjs.Events.PAUSE, () => console.log('pause'));
+    this.playerjs.on(playerjs.Events.ENDED, () => console.log('ended'));
+    this.playerjs.on(playerjs.Events.TIMEUPDATE, () => console.log('timeupdate'));
+    this.playerjs.on(playerjs.Events.PROGRESS, () => console.log('progress'));
+    this.playerjs.on(playerjs.Events.ERROR, () => console.log('error'));
   }
 
   handleOnClickPlayPause = () => {
