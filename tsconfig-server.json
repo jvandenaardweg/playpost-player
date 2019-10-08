@@ -20,7 +20,7 @@
     "lib": ["es5", "es6", "dom.iterable", "dom"], // es6 = typeOrm requirement
     "moduleResolution": "node",
     "noEmit": true,
-    "outDir": "dist",
+    "outDir": "./build-server",
     "target": "es2018", // For puppeteer -> https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#code-transpilation-issues
     "module": "commonjs",
     "removeComments": true,
@@ -31,6 +31,6 @@
     ],
     "types": ["node", "jest"]
   },
-  "include": ["./src-server"],
-  "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts"]
+  "include": ["src-server/**/*",],
+  "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts", "./src-server/pages/**"]
 }

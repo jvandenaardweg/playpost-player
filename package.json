@@ -5,6 +5,7 @@
   "dependencies": {
     "@babel/core": "7.6.0",
     "@svgr/webpack": "4.3.2",
+    "@types/ejs": "^2.6.3",
     "@types/express": "^4.17.1",
     "@types/jest": "24.0.18",
     "@types/node": "12.7.11",
@@ -18,7 +19,6 @@
     "babel-loader": "8.0.6",
     "babel-plugin-named-asset-import": "^0.3.4",
     "babel-preset-react-app": "^9.0.2",
-    "body-parser": "^1.19.0",
     "camelcase": "^5.2.0",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "css-loader": "2.1.1",
@@ -36,6 +36,7 @@
     "eslint-plugin-react-hooks": "^1.6.1",
     "express": "^4.17.1",
     "file-loader": "3.0.1",
+    "forever": "^1.0.0",
     "fs-extra": "7.0.1",
     "html-webpack-plugin": "4.0.0-beta.5",
     "identity-obj-proxy": "3.0.0",
@@ -67,7 +68,7 @@
     "style-loader": "1.0.0",
     "terser-webpack-plugin": "1.4.1",
     "ts-pnp": "1.1.4",
-    "typescript": "3.6.3",
+    "typescript": "^3.6.3",
     "url-loader": "2.1.0",
     "webpack": "4.41.0",
     "webpack-dev-server": "3.2.1",
@@ -75,10 +76,12 @@
     "workbox-webpack-plugin": "4.3.1"
   },
   "scripts": {
-    "start": "node scripts/start.js",
-    "build": "node scripts/build.js",
-    "test": "node scripts/test.js",
-    "dev:server": "ts-node-dev -r dotenv/config --inspect --respawn --transpileOnly --project ./tsconfig-server.json ./src-server/server.ts"
+    "dev:frontend": "node scripts/start.js",
+    "build:frontend": "node scripts/build.js",
+    "test:frontend": "node scripts/test.js",
+    "build:server": "npx tsc --p tsconfig-server.production.json",
+    "dev:server": "ts-node-dev -r dotenv/config --inspect --respawn --transpileOnly --project ./tsconfig-server.json ./src-server/index.ts",
+    "start:server": "forever -m 5 dist/index.js"
   },
   "eslintConfig": {
     "extends": "react-app"

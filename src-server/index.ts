@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express'
-// import bodyParser from 'body-parser';
 import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
@@ -7,38 +6,17 @@ import { Api } from '../src/typings/playpost-api';
 
 const app = express();
 
+// Set custom ejs delimiter
+// Use: <$- article $>
+ejs.delimiter = '$';
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
-app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.static(path.join(__dirname, '../build-frontend')));
 
 app.get('/ping', (req: Request, res: Response) => {
   return res.send('pong');
-});
-
-app.get('/articles/:articleId', async (req: Request, res: Response) => {
-  const { articleId } = req.params;
-
-  if (!articleId) {
-    return res.status(400).send('Please give an article ID.');
-  }
-
-  // TODO: check if we have a cached HTML version
-
-  // TODO: cache endpoint
-  try {
-    const article = await nodeFetch(`https://api.playpost.app/v1/articles/${articleId}`, {
-      method: 'get'
-    }).then(response => response.json())
-
-    // TODO: cache
-
-    return article;
-    // return res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  } catch (err) {
-    return res.status(500).send('An error happened.');
-  }
-
 });
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
@@ -63,10 +41,6 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   }
 
   try {
-
-    // TODO: First, check if we have a cached HTML version in Redis (Embed:Article:1231231231233313)
-
-    // If there is no cached version, do an API call to get the article and audiofile data
     const response = await nodeFetch(`http://localhost:3000/v1/articles/${articleId}`, {
       method: 'get',
       headers: {
@@ -77,7 +51,6 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
 
     if (!response.ok) {
       const json = await response.json()
-
       throw new Error(json.message ? json.message : 'Did not got ok from api')
     }
 
@@ -94,11 +67,8 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       return res.status(404).send(errorPageRendered);
     }
 
-    // @ts-ignore
-    ejs.delimiter = '$';
-
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(__dirname + '/../build/index.ejs', {
+    const embedPageRendered = await ejs.renderFile(__dirname + '/../build-frontend/index.ejs', {
       title: article.title,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
