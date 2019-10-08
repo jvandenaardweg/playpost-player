@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    // "baseUrl": "./src/server",
+    // "baseUrl": ".",
+    // "rootDir": "./src/server",
     "importHelpers": true,
     "emitDecoratorMetadata": true, // typeOrm requirement
     "experimentalDecorators": true, // typeOrm requirement
@@ -31,6 +32,6 @@
     ],
     "types": ["node", "jest"]
   },
-  "include": ["./src/server/**/*", "./package.json"],
+  "include": ["./src/server/**/*"],
   "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts", "./src-server/pages/**"]
 }
