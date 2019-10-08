@@ -8,7 +8,7 @@ blocks:
   - name: Deploy
     task:
       secrets:
-        - name: playpost-api-production-key
+        - name: playpost-embed-production-key
       prologue:
         commands:
           - checkout
