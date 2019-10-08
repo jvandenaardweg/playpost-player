@@ -85,8 +85,8 @@ export class Player extends React.PureComponent<Props, State> {
   private rangeMax = 1;
   private rangeStep = 0.0001;
 
-  private appStoreRedirect: number | null = null
-  private playerjsReceiver: any = {};
+  private appStoreRedirect: number | null = null;
+  private playerjsReceiver = new playerjs.Receiver();
 
   componentDidMount() {
     const { audiofileLength, themeOptions } = this.props
@@ -114,7 +114,6 @@ export class Player extends React.PureComponent<Props, State> {
    */
   setupPlayerJSInteractions = () => {
     // TEST AT: http://playerjs.io/test.html
-    this.playerjsReceiver = new playerjs.Receiver();
 
     this.playerjsReceiver.on('play', () => {
       this.playAudio()
@@ -225,11 +224,16 @@ export class Player extends React.PureComponent<Props, State> {
       loadedSeconds: number
     }
   ) => {
-    const { isSeeking } = this.state;
+    const { isSeeking, duration } = this.state;
     console.log('handleOnProgress', progressState)
 
     // We only want to update time slider if we are not currently isSeeking
     if (!isSeeking) {
+      this.playerjsReceiver.emit('timeupdate', {
+        seconds: progressState.playedSeconds,
+        duration
+      });
+
       this.setState({
         ...progressState,
         isLoading: false
@@ -239,6 +243,7 @@ export class Player extends React.PureComponent<Props, State> {
 
   handleOnEnded = () => {
     console.log('handleOnEnded')
+    this.playerjsReceiver.emit('ended')
     this.setState({ isPlaying: false })
   }
 
@@ -264,6 +269,7 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   handleOnReady = () => {
+    this.playerjsReceiver.ready();
     console.log('handleOnReady')
   }
 
