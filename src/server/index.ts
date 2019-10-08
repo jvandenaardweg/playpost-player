@@ -60,7 +60,19 @@ app.get('/oembed', async (req: Request, res: Response) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   // More info: https://oembed.com/
 
-  const { url } = req.query;
+  const { url, format } = req.query;
+
+  if (format && format !== 'json') {
+    return res.status(400).json({
+      message: 'We currently only support the json format. Please only use ?format=json'
+    })
+  }
+
+  if (!url) {
+    return res.status(400).json({
+      message: 'Please specify a url.'
+    })
+  }
 
   try {
     const cacheKey = `articles/${url}`;
