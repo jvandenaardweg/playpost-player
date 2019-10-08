@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 import { Player, PlayerThemeOptions } from './components/Player';
-import { Api } from './typings/playpost-api';
+import { Api } from '../@types/playpost-api';
 
 const App: React.FC = () => {
   /**

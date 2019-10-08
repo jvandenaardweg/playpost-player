@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import path from 'path';
 import ejs from 'ejs';
 import nodeFetch from 'node-fetch';
-import { Api } from '../src/typings/playpost-api';
+import { Api } from '../@types/playpost-api';
 
 const app = express();
 

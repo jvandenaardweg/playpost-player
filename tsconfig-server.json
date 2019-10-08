@@ -31,6 +31,6 @@
     ],
     "types": ["node", "jest"]
   },
-  "include": ["src-server/**/*",],
+  "include": ["src-server/**/*", "@types"],
   "exclude": ["node_modules", "babel.config.js", "src/**/*.test.ts", "./src-server/pages/**"]
 }
