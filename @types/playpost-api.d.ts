@@ -3,6 +3,7 @@ export declare namespace Api {
     id: string;
     title: string;
     url: string;
+    canonicalUrl: string;
     audiofiles: Audiofile[];
     sourceName: string;
   }

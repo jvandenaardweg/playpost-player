@@ -75,7 +75,7 @@ const App: React.FC = () => {
       <Player
         articleId={article.id}
         articleTitle={article.title}
-        articleUrl={article.url}
+        articleUrl={article.canonicalUrl || article.url}
         articleSourceName={article.sourceName}
         voiceLabel={audiofile.voice.label}
         voiceLanguageCode={audiofile.voice.languageCode}
