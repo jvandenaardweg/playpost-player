@@ -17,7 +17,7 @@ console.log('Server Init: Version: ', version)
 
 const app = express();
 
-const EMBED_BASE_URL = process.env.EMBED_BASE_URL || 'https://embed.playpost.app';
+const PLAYER_BASE_URL = process.env.PLAYER_BASE_URL || 'https://player.playpost.app';
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
@@ -126,7 +126,7 @@ app.get('/oembed', async (req: Request, res: Response) => {
       author_name: article.sourceName,
       author_url: article.canonicalUrl || article.url,
       thumbnail_url: article.imageUrl,
-      html: `<iframe src="${EMBED_BASE_URL}/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
+      html: `<iframe src="${PLAYER_BASE_URL}/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
     }
 
     cache.set(cacheKey, responseToSend, 60);
@@ -233,7 +233,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       imageUrl: article.imageUrl,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
-      embedUrl: `${EMBED_BASE_URL}${req.url}`
+      embedUrl: `${PLAYER_BASE_URL}${req.url}`
     })
 
     cache.set(cacheKey, embedPageRendered, 60); // Cache page for 60 seconds
