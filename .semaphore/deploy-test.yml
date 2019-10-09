@@ -8,7 +8,7 @@ blocks:
   - name: Deploy
     task:
       secrets:
-        - name: playpost-embed-secrets
+        - name: playpost-player-secrets
       prologue:
         commands:
           - checkout
@@ -17,7 +17,7 @@ blocks:
           commands:
             - git config --global user.email "semaphore@playpost.app"
             - git config --global user.name "Semaphore CI"
-            - git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/playpost-embed-test.git
+            - git remote add heroku https://heroku:$HEROKU_API_KEY@git.heroku.com/playpost-player-test.git
             - git push heroku -f $SEMAPHORE_GIT_BRANCH:master & # "&" so we don't have to wait for Heroku deployment status
             - sleep 30 # Sleep a little, to make sure git pushed. It seems like a git push isn't landing correctly sometimes.
 

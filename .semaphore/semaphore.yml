@@ -27,7 +27,7 @@ blocks:
   #     when: "branch != 'master' AND branch != 'develop'"
   #   task:
   #     secrets:
-  #       - name: playpost-embed-secrets
+  #       - name: playpost-player-secrets
   #     prologue:
   #       commands:
   #         - checkout

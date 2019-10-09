@@ -1,5 +1,5 @@
 {
-  "name": "playpost-embed",
+  "name": "playpost-player",
   "version": "1.4.0",
   "private": true,
   "dependencies": {
