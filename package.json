@@ -95,7 +95,8 @@
     "start:server": "forever -m 5 ./build-server/src/server/index.js",
     "build": "npm run build:clean && npm run build:frontend && npm run build:server && npm run build:server:copypages",
     "start": "npm run start:server",
-    "heroku-postbuild": "npm run build"
+    "heroku-postbuild": "npm run build",
+    "version": "git push"
   },
   "eslintConfig": {
     "extends": "react-app"
