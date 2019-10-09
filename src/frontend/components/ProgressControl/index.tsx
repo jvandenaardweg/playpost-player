@@ -1,7 +1,6 @@
 import React from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { Duration } from '../Duration';
-import { URL_PLAYPOST_WEBSITE } from '../../constants/urls';
 import { PlayerThemeOptions, PlayerType } from '../Player';
 
 export interface Props {
