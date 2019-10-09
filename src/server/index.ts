@@ -161,7 +161,7 @@ app.get('/oembed', async (req: Request, res: Response) => {
 })
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
-  const { refreshCashe } = req.query;
+  const { deleteCache } = req.query;
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -188,7 +188,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
   try {
     const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
 
-    if (refreshCashe) {
+    if (deleteCache) {
       console.log(articleId, `Removing cache.`)
       cache.del(cacheKey)
     }
