@@ -161,6 +161,8 @@ app.get('/oembed', async (req: Request, res: Response) => {
 })
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
+  const { refreshCashe } = req.query;
+
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
   const { articleId, audiofileId } = req.params;
@@ -185,6 +187,12 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
 
   try {
     const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
+
+    if (refreshCashe) {
+      console.log(articleId, `Removing cache.`)
+      cache.del(cacheKey)
+    }
+
     const cachedPage = cache.get(cacheKey)
 
     // If we have a cached version, return that
@@ -232,7 +240,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       embedUrl: `${PLAYER_BASE_URL}${req.url}`
     })
 
-    cache.set(cacheKey, embedPageRendered, 60); // Cache page for 60 seconds
+    cache.set(cacheKey, embedPageRendered, 60 * 60 * 24); // Cache for one day
 
     console.log(articleId, `Returning rendered embed page.`)
 
