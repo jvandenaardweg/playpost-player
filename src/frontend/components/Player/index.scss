@@ -3,7 +3,7 @@
 
 .Player {
   width: 100%;
-  height: 155px;
+  height: 115px;
   overflow: hidden;
   position: relative;
   border-radius: 6px;
@@ -19,6 +19,7 @@
   position: relative;
   width: 100%;
   height: 100%;
+  justify-content: center;
 }
 
 .Player__react-player {
@@ -26,7 +27,7 @@
 }
 
 .Player__title {
-  font-size: 16px;
+  font-size: 18px;
   color: $black;
   margin: 0;
   line-height: 1.3;
@@ -34,18 +35,33 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  font-weight: 500;
+  margin-top: -2px;
+
+  span {
+    font-size: 13px;
+    color: $grayDark;
+    font-weight: normal;
+    display: inline-block;
+    padding-left: $spacing-tiny;
+
+    a {
+      color: $grayDark;
+      text-decoration: underline;
+    }
+  }
 }
 
 .Player__title a {
   color: $black;
   text-decoration: none;
-  margin-top: -4px; // to correctly align with top
+  // margin-top: -4px; // to correctly align with top
 }
 
 .Player__subtitle {
   font-size: 14px;
   color: $black;
-  opacity: 0.5;
+  // opacity: 0.5;
   margin: 0;
   font-weight: normal;
   line-height: 1.3;
@@ -53,6 +69,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 100%;
+  margin-bottom: $spacing-tiny;
 }
 
 .Player__subtitle a {
@@ -73,7 +90,7 @@
 .Player__top-container {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  // margin-bottom: 12px;
 }
 
 .Player__bottom-container {
@@ -87,17 +104,21 @@
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
+
+  @media screen and (min-width: 500px) { // https://ricostacruz.com/til/css-media-query-breakpoints
+    display: $spacing-default;
+  }
 }
 
-.Player__top-actions-container {
-  flex-shrink: 0;
+.Player__info-meta {
   display: flex;
-  padding-left: 8px;
-  display: none;
+  flex-direction: row;
+}
 
-  @media screen and (min-width: 768px) { // https://ricostacruz.com/til/css-media-query-breakpoints
-    display: flex;
-  }
+
+.Player__top-actions-container {
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
 
 .Player__play-control-container {
@@ -141,9 +162,10 @@
 .Player__progress-container {
   flex-grow: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  margin-top: $spacing-tiny;
 }
 
 .Player__progress-control-container {
@@ -155,6 +177,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: $spacing-nano;
+  pointer-events: none;
 }
 
 .Player__progress-control {
@@ -165,13 +188,28 @@
 }
 
 .Player__progress-time {
-  width: 50px;
+  width: 44px;
   color: $grayDark;
-  font-size: 13px;
+  font-size: 14px;
+  height: 16px;
   transition: 250ms color;
+  flex-shrink: 0;
+  pointer-events: none;
+}
 
-  &.is-playing {
-    color: $black;
+.Player__branding {
+  color: $grayDark;
+  font-size: 12px;
+  text-decoration: none;
+  transition: 250ms all;
+  line-height: 1.8;
+  width: 75px;
+  text-align: right;
+  flex-shrink: 0;
+
+  &:hover {
+    text-decoration: underline;
+    color: $tintColor;
   }
 }
 
@@ -223,24 +261,29 @@
 }
 
 .Player__range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 16px;
+  height: 2px;
+  width: 2px;
+  border-radius: 2px;
   background-color: $black;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2); */
   transition: 150ms all;
+  visibility: hidden;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .Player__range-thumb--is-dragging {
-  transform: scale(1.75);
+  transform: scale(8);
+  visibility: visible;
 }
 
 .Player__range-thumb-label {
   position: absolute;
-  top: -24px;
+  top: -21px;
   color: $white;
   font-weight: bold;
   font-size: 14px;

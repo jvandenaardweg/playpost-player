@@ -1,11 +1,8 @@
 import React from 'react'
 import ReactPlayer from 'react-player';
-import { Range, getTrackBackground } from 'react-range';
 import playerjs from 'player.js';
 
 import { version } from '../../../../package.json';
-
-import { Duration } from '../Duration';
 
 import * as analytics from '../../utils/analytics'
 
@@ -16,6 +13,13 @@ import { getPlatform } from '../../utils/platform';
 import { Button } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
 import * as Icons from '../Icons';
+import { ProgressControl } from '../ProgressControl';
+
+export enum PlayerType {
+  small = 'small',
+  normal = 'normal',
+  large = 'large'
+}
 
 export interface PlayerThemeOptions {
   buttonColor: string;
@@ -27,6 +31,11 @@ export interface PlayerThemeOptions {
   trackLabelBackgroundColor: string;
 }
 
+export interface PlayerOptions {
+  hideTitle: boolean;
+  hidePlaylistButton: boolean;
+}
+
 interface Props {
   audiofileUrl: string;
   articleId: string;
@@ -36,7 +45,9 @@ interface Props {
   voiceLabel: string;
   voiceLanguageCode: string;
   audiofileLength: number;
-  themeOptions: PlayerThemeOptions
+  themeOptions: PlayerThemeOptions;
+  playerOptions: PlayerOptions;
+  type: PlayerType;
 }
 
 interface State {
@@ -91,8 +102,8 @@ export class Player extends React.PureComponent<Props, State> {
   private playerjsReceiver = new playerjs.Receiver();
 
   componentDidMount() {
-    const { audiofileLength, themeOptions } = this.props
-    const platform = getPlatform(navigator)
+    const { audiofileLength, themeOptions, type } = this.props
+    const platform = getPlatform(window.navigator)
 
     this.setState({ duration: audiofileLength, platform })
 
@@ -100,6 +111,7 @@ export class Player extends React.PureComponent<Props, State> {
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
     console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
+    console.log('Playpost Player Init: Type: ', type)
 
     this.setupPlayerJSInteractions()
   }
@@ -325,9 +337,9 @@ export class Player extends React.PureComponent<Props, State> {
 
   handleOnClickSave = () => {
     const { platform } = this.state
-    const { articleId } = this.props
+    const { articleId, articleTitle } = this.props
 
-    window.location.href = `playpost://playlist/add/${articleId}`;
+    window.location.href = `playpost://playlist/add/${articleId}?title=${articleTitle}`;
 
     const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
@@ -339,9 +351,9 @@ export class Player extends React.PureComponent<Props, State> {
 
       this.setState({ showAppStoresModal: true })
 
-      this.appStoreRedirect = window.setTimeout(() => {
-        window.location.href = URL_APPLE_APP_STORE
-      }, 1000);
+      // this.appStoreRedirect = window.setTimeout(() => {
+      //   window.location.href = appStoreUrl
+      // }, 1000);
     } else {
       analytics.trackEvent('click_save', this.props.articleId, {
         platform
@@ -368,7 +380,7 @@ export class Player extends React.PureComponent<Props, State> {
 
   render () {
     const { isPlaying, volume, isMuted, isLooped, played, duration, playbackRate, audiofileUrl, isLoading, isError, loaded, showAppStoresModal, showSettingsModal } = this.state
-    const { articleTitle, articleUrl, voiceLabel, articleSourceName, themeOptions, voiceLanguageCode } = this.props
+    const { articleTitle, articleUrl, voiceLabel, articleSourceName, themeOptions, voiceLanguageCode, type, playerOptions } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
     const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor }
@@ -385,12 +397,6 @@ export class Player extends React.PureComponent<Props, State> {
         {showAppStoresModal && (
           <Modal onClickClose={this.handleOnClickCloseAppStoresModal}>
             <ModalContentAppStores />
-          </Modal>
-        )}
-
-        {showSettingsModal && (
-          <Modal onClickClose={this.handleOnClickToggleSettings}>
-            <p>Choose a voice</p>
           </Modal>
         )}
 
@@ -439,76 +445,34 @@ export class Player extends React.PureComponent<Props, State> {
               </button>
             </div>
             <div className="Player__info-container">
-              <div>
+              <div className="Player__info-meta">
                 <h1 className="Player__title" style={titleThemeStyle}>
-                  <a href={articleUrl} style={titleThemeStyle}>{articleTitle}</a>
-                  </h1>
-                <h2 className="Player__subtitle">
-                  <a href={articleUrl}>{articleSourceName}</a>, voice: {voiceLabel} ({voiceLanguageCode})
-                </h2>
+                  {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
+                </h1>
+                <a href={URL_PLAYPOST_WEBSITE} className="Player__branding">by Playpost</a>
               </div>
-              <div className="Player__action">
-                <Button onClick={this.handleOnClickSave}>Save to Playpost</Button>
-              </div>
-            </div>
-            {/* <div className="Player__top-actions-container">
-              <Button onClick={this.handleOnClickSave}>Save to Playpost</Button> &nbsp;
-              <Button onClick={this.handleOnClickToggleSettings} type="clean"><Icons.Settings /></Button>
-            </div> */}
-          </div>
-          <div className="Player__bottom-container">
-            <div className="Player__progress-container">
-              <div className="Player__progress-control-container">
-              <Range
-                step={this.rangeStep}
-                min={this.rangeMin}
-                max={this.rangeMax}
-                values={[played]}
-                onChange={this.handleRangeOnChange}
-                onFinalChange={this.handleRangeOnFinalChange}
-                renderTrack={({ props, children }) => (
-                  <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} className="Player__range-track-container">
-                    <div
-                      ref={props.ref}
-                      style={{
-                        ...props.style,
-                        background: getTrackBackground({
-                          values: [played, loaded],
-                          colors: [themeOptions.trackBackgroundColor, '#AAAAAA', '#e5e5e5'],
-                          min: this.rangeMin,
-                          max: this.rangeMax
-                        })
-                      }}
-                      className="Player__range-track-inner">
-                        {children}
-                      </div>
-                  </div>
 
-                )}
-                renderThumb={({ props, isDragged }) => (
-                  <div {...props} className="Player__range-thumb-container">
-                    <div
-                      className={`Player__range-thumb ${isDragged ? 'Player__range-thumb--is-dragging' : ''}`}
-                      style={trackThumbStyle}
-                    ></div>
-                    {isDragged && (
-                      <div className="Player__range-thumb-label" style={trackLabelStyle}>
-                        <Duration seconds={duration * played} />
-                      </div>
-                    )}
-                  </div>
-                )}
+              {!playerOptions.hidePlaylistButton && (
+                <div className="Player__top-actions-container">
+                  <Button onClick={this.handleOnClickSave}>Add to playlist</Button>
+                </div>
+              )}
+
+              <ProgressControl
+                rangeStep={this.rangeStep}
+                rangeMin={this.rangeMin}
+                rangeMax={this.rangeMax}
+                onRangeChange={this.handleRangeOnChange}
+                onRangeFinalChange={this.handleRangeOnFinalChange}
+                played={played}
+                loaded={loaded}
+                duration={duration}
+                isPlaying={isPlaying}
+                themeOptions={themeOptions}
+                trackThumbStyle={trackThumbStyle}
+                trackLabelStyle={trackLabelStyle}
+                type={type}
               />
-              </div>
-              <div className="Player__progress-time-container">
-                <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : ''}`}>
-                  <Duration seconds={duration * played} />
-                </div>
-                <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank" rel="noopener noreferrer">Audio by <span>Playpost</span></a>
-                <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : ''}`}>
-                  <Duration seconds={duration * (1 - played)} />
-                </div>
-              </div>
             </div>
           </div>
         </div>

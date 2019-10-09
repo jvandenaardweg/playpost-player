@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.scss';
-import { Player, PlayerThemeOptions } from './components/Player';
+import { Player, PlayerThemeOptions, PlayerType, PlayerOptions } from './components/Player';
 import { Api } from '../@types/playpost-api';
 
 const App: React.FC = () => {
@@ -20,6 +20,43 @@ const App: React.FC = () => {
     const hex = `#${colorCode}`;
     const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
     return regex.test(hex);
+  }
+
+  const getUserDefinedPlayerOptions = (): PlayerOptions => {
+    const urlParams = new window.URLSearchParams(window.location.search);
+
+    const defaultOptions: PlayerOptions = {
+      hideTitle: false,
+      hidePlaylistButton: false
+    }
+
+    let options: PlayerOptions = {
+      ...defaultOptions
+    }
+
+    for (const [key] of Object.entries(defaultOptions)) {
+      const paramValue = urlParams.get(key)
+      if (paramValue === 'true') {
+        options = {
+          ...options,
+          [key]: true
+        }
+      }
+    }
+
+    return options
+  }
+
+  const getUserDefinedPlayerType = (): PlayerType => {
+    const urlParams = new window.URLSearchParams(window.location.search);
+
+    const paramValue = urlParams.get('type')
+
+    if (!paramValue) {
+      return PlayerType.normal
+    }
+
+    return paramValue as PlayerType
   }
 
   const getUserDefinedPlayerThemeOptions = () => {
@@ -53,6 +90,8 @@ const App: React.FC = () => {
   }
 
   const playerThemeOptions = getUserDefinedPlayerThemeOptions()
+  const playerType = getUserDefinedPlayerType()
+  const playerOptions = getUserDefinedPlayerOptions()
 
   if (!article) {
     return (
@@ -82,6 +121,8 @@ const App: React.FC = () => {
         audiofileUrl={audiofile.url}
         audiofileLength={audiofile.length}
         themeOptions={playerThemeOptions}
+        playerOptions={playerOptions}
+        type={playerType}
       />
     </div>
   );
