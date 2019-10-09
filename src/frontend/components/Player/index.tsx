@@ -102,12 +102,13 @@ export class Player extends React.PureComponent<Props, State> {
   private playerjsReceiver = new playerjs.Receiver();
 
   componentDidMount() {
-    const { audiofileLength, themeOptions, type } = this.props
+    const { audiofileLength, themeOptions, type, playerOptions } = this.props
     const platform = getPlatform(window.navigator)
 
     this.setState({ duration: audiofileLength, platform })
 
     console.log('Playpost Player Init: Version: ', version)
+    console.log('Playpost Player Init: Using playerOptions: ', playerOptions)
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
     console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
