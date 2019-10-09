@@ -2,22 +2,22 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express'
 import path from 'path';
 import ejs from 'ejs';
-import nodeFetch from 'node-fetch';
 import NodeCache from 'node-cache';
 import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 
-import { Api } from '../@types/playpost-api';
 import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
+import * as api from './api';
 
 console.log('Server Init: Version: ', version)
 
 const app = express();
 
 const PLAYER_BASE_URL = process.env.PLAYER_BASE_URL || 'https://player.playpost.app';
+const CACHE_TTL = 60 * 60 * 24;
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
@@ -58,6 +58,7 @@ app.get('/oembed', async (req: Request, res: Response) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   // More info: https://oembed.com/
 
+  // Example url: https://player.playpost.app/articles/c3baaf54-28a5-47d1-b752-07f21bd8a7bc/audiofiles/72dc6da2-798a-4b14-a5e2-c0fbf4039788
   const { url, format } = req.query;
 
   if (format && format !== 'json') {
@@ -83,33 +84,16 @@ app.get('/oembed', async (req: Request, res: Response) => {
       return res.send(cachedPage)
     }
 
-    console.log(url, `Getting article from API...`)
-
-    const response = await nodeFetch(`${process.env.API_URL}/v1/articles?url=${url}`, {
-      method: 'get',
-      headers: {
-        'X-Api-Key': process.env.API_KEY || '',
-        'X-Api-Secret': process.env.API_SECRET || ''
-      }
+    const articleAndAudiofileIds = url.split('/').filter((urlPart: string) => {
+      return !['https:', '', 'player.playpost.app', 'localhost', 'localhost:8080', 'articles', 'audiofiles'].includes(urlPart)
     })
 
-    if (!response.ok) {
-      const json = await response.json()
-      throw new Error(json.message ? json.message : 'Did not got ok from api')
-    }
+    const articleId = articleAndAudiofileIds[0];
+    const audiofileId = articleAndAudiofileIds[1]
 
-    const article: Api.Article = await response.json()
+    console.log(url, `Getting article from API...`)
 
-    // TODO: how do we determine which audiofile to return?
-    const audiofile = article.audiofiles[0]
-
-    if (!audiofile) {
-      return res.status(404).json({
-        message: 'Article has no audio yet.'
-      })
-    }
-
-    // TODO: Use article URL to get
+    const { article } = await api.findArticleById(articleId, audiofileId);
 
     const responseToSend = {
       version: '1.0',
@@ -117,15 +101,15 @@ app.get('/oembed', async (req: Request, res: Response) => {
       provider_name: 'Playpost',
       provider_url: 'https://playpost.app',
       width: 480,
-      height: 155, // Height in frontend/Player/index.scss
+      height: 115, // Height in frontend/Player/index.scss
       title: article.title,
       author_name: article.sourceName,
       author_url: article.canonicalUrl || article.url,
       thumbnail_url: article.imageUrl,
-      html: `<iframe src="${PLAYER_BASE_URL}/articles/${article.id}/${audiofile.id}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
+      html: `<iframe src="${url}" width="100%" height="155" frameborder="0" scrolling="no"></iframe>`
     }
 
-    cache.set(cacheKey, responseToSend, 60);
+    cache.set(cacheKey, responseToSend, CACHE_TTL);
 
     console.log(url, `Returning oembed data.`)
 
@@ -136,28 +120,6 @@ app.get('/oembed', async (req: Request, res: Response) => {
       message: 'An uknown error happened.'
     })
   }
-
-
-  // {
-  //   "version": "1.0",
-  //   "type": "video",
-  //   "provider_name": "YouTube",
-  //   "provider_url": "http://youtube.com/",
-  //   "width": 425,
-  //   "height": 344,
-  //   "title": "Amazing Nintendo Facts",
-  //   "author_name": "ZackScott",
-  //   "author_url": "http://www.youtube.com/user/ZackScott",
-  //   "html":
-  //     "<object width=\"425\" height=\"344\">
-  //       <param name=\"movie\" value=\"http://www.youtube.com/v/M3r2XDceM6A&fs=1\"></param>
-  //       <param name=\"allowFullScreen\" value=\"true\"></param>
-  //       <param name=\"allowscriptaccess\" value=\"always\"></param>
-  //       <embed src=\"http://www.youtube.com/v/M3r2XDceM6A&fs=1\"
-  //         type=\"application/x-shockwave-flash\" width=\"425\" height=\"344\"
-  //         allowscriptaccess=\"always\" allowfullscreen=\"true\"></embed>
-  //     </object>",
-  // }
 })
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
@@ -203,32 +165,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
 
     console.log(articleId, `Getting article from API...`)
 
-    const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
-      method: 'get',
-      headers: {
-        'X-Api-Key': process.env.API_KEY || '',
-        'X-Api-Secret': process.env.API_SECRET || ''
-      }
-    })
-
-    if (!response.ok) {
-      const json = await response.json()
-      throw new Error(json.message ? json.message : 'Did not got ok from api')
-    }
-
-    const article: Api.Article = await response.json()
-
-    // Find the audiofile using the audiofileId from the url param
-    const audiofile = article.audiofiles.find(audiofile => audiofile.id === audiofileId);
-
-    if (!audiofile) {
-      // TODO: make sure error.ejs is in build-server
-      const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
-        title: 'Oops!',
-        description: 'Could not find the audiofile in the article data.'
-      })
-      return res.status(404).send(errorPageRendered);
-    }
+    const { article, audiofile } = await api.findArticleById(articleId, audiofileId);
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
     const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
@@ -240,7 +177,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
       embedUrl: `${PLAYER_BASE_URL}${req.url}`
     })
 
-    cache.set(cacheKey, embedPageRendered, 60 * 60 * 24); // Cache for one day
+    cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
 
     console.log(articleId, `Returning rendered embed page.`)
 
