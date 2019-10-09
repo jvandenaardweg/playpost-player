@@ -34,10 +34,6 @@ const rateLimiter = new ExpressRateLimit({
   }
 });
 
-// Set custom ejs delimiter
-// Use: <$- article $>
-// ejs.delimiter = '$';
-
 app.use(helmet({
   frameguard: false // We need iframe support enabled for the embed
 }))
