@@ -6,6 +6,7 @@ import NodeCache from 'node-cache';
 import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
+import md5 from 'md5';
 
 import { version } from '../../package.json'
 
@@ -21,13 +22,22 @@ const CACHE_TTL = 60 * 60 * 24;
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
-const rateLimiter = new ExpressRateLimit({
+const rateLimited = new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 30, // 30 requests allowed per minute, so at most: 1 per every 2 seconds
+  max: 20, // 15 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
   keyGenerator: (req: Request) => {
     const ipAddressOfUser = getRealUserIpAddress(req);
-    return ipAddressOfUser;
+    const userAgent = req.get('User-Agent');
+    const userAcceptLanguage = req.get('Accept-Language');
+    const userAccept = req.get('Accept');
+    const userReferer = req.get('Referer');
+
+    // Create a unique key based on the user browser data
+    // This is not perfect, but this might be the closest we get to a unique user
+    const uniqueKey = md5(ipAddressOfUser + userAgent + userAcceptLanguage + userAccept + userReferer);
+
+    return uniqueKey;
   },
   handler: (req: Request, res: Response, next: NextFunction) => {
     return res.status(429).send('Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again later.');
@@ -37,8 +47,6 @@ const rateLimiter = new ExpressRateLimit({
 app.use(helmet({
   frameguard: false // We need iframe support enabled for the embed
 }))
-
-app.use(rateLimiter)
 
 app.set('etag', false)
 
@@ -50,11 +58,16 @@ app.use('/static', serveStatic(path.join(__dirname, '../../../build-frontend/sta
   maxAge: 31536000,
 }));
 
-app.get('/ping', (req: Request, res: Response) => {
+app.use('/favicon.ico', serveStatic(path.join(__dirname, '../../../build-frontend/favicon.ico'), {
+  cacheControl: true,
+  maxAge: 31536000,
+}));
+
+app.get('/ping', rateLimited, (req: Request, res: Response) => {
   return res.send('pong');
 });
 
-app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res: Response) => {
+app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -144,7 +157,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', async (req: Request, res
 //   return res.status(404).send('Not found.');
 // })
 
-app.all('*', (req: Request, res: Response) => {
+app.all('*', rateLimited, (req: Request, res: Response) => {
   return res.status(404).send('Not found.');
 })
 
