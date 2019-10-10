@@ -13,7 +13,7 @@
   background-color: $white;
   border: 1px $grayLight solid;
   border-radius: 6px;
-  padding: $spacing-default;
+  // padding: $spacing-default; // Set by playerOptions on component
   display: flex;
   flex-direction: column;
   position: relative;
