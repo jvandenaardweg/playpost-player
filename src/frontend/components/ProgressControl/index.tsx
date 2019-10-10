@@ -16,7 +16,7 @@ export interface Props {
   trackLabelStyle: React.CSSProperties;
   onRangeChange(values: number[]): void;
   onRangeFinalChange(values: number[]): void;
-  type: PlayerType
+  hideProgressTime: boolean;
 }
 
 export const ProgressControl: React.FC<Props> = ({
@@ -32,13 +32,16 @@ export const ProgressControl: React.FC<Props> = ({
   themeOptions,
   trackThumbStyle,
   trackLabelStyle,
-  type
+  hideProgressTime
 }) => {
   return (
     <div className="Player__progress-container">
-      <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : ''}`}>
-        <Duration seconds={duration * played} />
-      </div>
+      {!hideProgressTime && (
+        <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : ''}`}>
+          <Duration seconds={duration * played} />
+        </div>
+      )}
+
       <div className="Player__progress-control-container">
         <Range
           step={rangeStep}
@@ -81,16 +84,12 @@ export const ProgressControl: React.FC<Props> = ({
           )}
         />
       </div>
-      <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : ''}`}>
-        <Duration seconds={duration * (1 - played)} />
-      </div>
-      {/* <div className="Player__progress-time-container">
 
-        {type !== PlayerType.small && (
-          <a href={URL_PLAYPOST_WEBSITE} className="Player__progress-time-branding" target="_blank" rel="noopener noreferrer">Audio by <span>Playpost</span></a>
-        )}
-
-      </div> */}
+      {!hideProgressTime && (
+        <div className={`Player__progress-time Player__progress-time--remaining ${isPlaying ? 'is-playing' : ''}`}>
+          <Duration seconds={duration * (1 - played)} />
+        </div>
+      )}
     </div>
   )
 }

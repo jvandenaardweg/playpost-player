@@ -27,7 +27,8 @@ const App: React.FC = () => {
 
     const defaultOptions: PlayerOptions = {
       hideTitle: false,
-      hidePlaylistButton: false
+      hidePlaylistButton: false,
+      hideProgressTime: false
     }
 
     let options: PlayerOptions = {
