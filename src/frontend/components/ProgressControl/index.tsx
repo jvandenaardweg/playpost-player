@@ -1,7 +1,7 @@
 import React from 'react';
 import { Range, getTrackBackground } from 'react-range';
 import { Duration } from '../Duration';
-import { PlayerThemeOptions, PlayerType } from '../Player';
+import { PlayerThemeOptions } from '../Player';
 
 export interface Props {
   rangeStep: number;

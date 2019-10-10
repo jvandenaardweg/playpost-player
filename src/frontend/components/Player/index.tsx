@@ -382,7 +382,7 @@ export class Player extends React.PureComponent<Props, State> {
 
   render () {
     const { isPlaying, volume, isMuted, isLooped, played, duration, playbackRate, audiofileUrl, isLoading, isError, loaded, showAppStoresModal } = this.state
-    const { articleTitle, themeOptions, type, playerOptions } = this.props
+    const { articleTitle, themeOptions, playerOptions } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
     const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor }
