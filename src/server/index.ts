@@ -69,10 +69,9 @@ app.get('/ping', rateLimited, (req: Request, res: Response) => {
 
 app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
+  const { articleId, audiofileId } = req.params;
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-
-  const { articleId, audiofileId } = req.params;
 
   if (!articleId) {
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
@@ -119,7 +118,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
       imageUrl: article.imageUrl,
       article: JSON.stringify(article),
       audiofile: JSON.stringify(audiofile),
-      embedUrl: `${PLAYER_BASE_URL}${req.url}`
+      embedUrl: `${PLAYER_BASE_URL}${req.path}`
     })
 
     cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
@@ -151,11 +150,6 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
   }
 
 });
-
-// Catch-all
-// app.all('/index.html', (req: Request, res: Response) => {
-//   return res.status(404).send('Not found.');
-// })
 
 app.all('*', rateLimited, (req: Request, res: Response) => {
   return res.status(404).send('Not found.');
