@@ -96,7 +96,7 @@
     "build": "npm run build:clean && npm run build:frontend && npm run build:server && npm run build:server:copypages",
     "start": "npm run start:server",
     "heroku-postbuild": "npm run build",
-    "version": "git push"
+    "postversion": "git push"
   },
   "eslintConfig": {
     "extends": "react-app"
