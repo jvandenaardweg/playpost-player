@@ -29,7 +29,8 @@ const App: React.FC = () => {
       hideTitle: false,
       hidePlaylistButton: false,
       hideProgressTime: false,
-      noPadding: false
+      noPadding: false,
+      autoplay: false
     }
 
     let options: PlayerOptions = {
@@ -38,7 +39,7 @@ const App: React.FC = () => {
 
     for (const [key] of Object.entries(defaultOptions)) {
       const paramValue = urlParams.get(key)
-      if (paramValue === 'true') {
+      if (paramValue === 'true' || paramValue === '1') {
         options = {
           ...options,
           [key]: true

@@ -36,6 +36,7 @@ export interface PlayerOptions {
   hidePlaylistButton: boolean;
   hideProgressTime: boolean;
   noPadding: boolean;
+  autoplay: boolean;
 }
 
 interface Props {
@@ -107,7 +108,11 @@ export class Player extends React.PureComponent<Props, State> {
     const { audiofileLength, themeOptions, type, playerOptions } = this.props
     const platform = getPlatform(window.navigator)
 
-    this.setState({ duration: audiofileLength, platform })
+    this.setState({ duration: audiofileLength, platform }, () => {
+      if (playerOptions.autoplay) {
+        this.playAudio()
+      }
+    })
 
     console.log('Playpost Player Init: Version: ', version)
     console.log('Playpost Player Init: Using playerOptions: ', playerOptions)
@@ -116,7 +121,6 @@ export class Player extends React.PureComponent<Props, State> {
     console.log('Playpost Player Init: Using platform: ', platform)
     console.log('Playpost Player Init: Type: ', type)
 
-    this.setupPlayerJSInteractions()
   }
 
   componentWillUnmount() {
