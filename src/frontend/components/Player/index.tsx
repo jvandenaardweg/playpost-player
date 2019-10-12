@@ -392,7 +392,12 @@ export class Player extends React.PureComponent<Props, State> {
     const { platform } = this.state
     const { articleId, articleTitle } = this.props
 
-    window.location.href = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
+    if (window.location.href) {
+      window.location.href = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
+    } else {
+      // @ts-ignore
+      window.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
+    }
 
     const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
