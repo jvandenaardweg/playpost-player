@@ -25,10 +25,10 @@ export const Modal: React.FC<Props> = ({ title, text, onClickTryAgain, onClickCl
 
 export const ModalContentAppStores = () => (
   <div>
-    <p>Save directly to your playlist in <a href={URL_PLAYPOST_WEBSITE}>Playpost</a></p>
+    <p>Save directly to your playlist in <a href={URL_PLAYPOST_WEBSITE} target="_blank">Playpost</a></p>
     <div className="Modal__columns--2">
-      <a href={URL_APPLE_APP_STORE}><Icons.AppleAppStore /></a>
-      <a href={URL_GOOGLE_PLAY_STORE}><Icons.GooglePlayStore /></a>
+      <a href={URL_APPLE_APP_STORE} target="_blank"><Icons.AppleAppStore /></a>
+      <a href={URL_GOOGLE_PLAY_STORE} target="_blank"><Icons.GooglePlayStore /></a>
     </div>
   </div>
 )

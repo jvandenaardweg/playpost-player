@@ -124,7 +124,6 @@ export class Player extends React.PureComponent<Props, State> {
     this.setupPlayerJSInteractions()
     this.setupPostMessageResizing()
     this.sendResizePostMessage()
-
   }
 
   componentWillUnmount() {
@@ -404,10 +403,6 @@ export class Player extends React.PureComponent<Props, State> {
       })
 
       this.setState({ showAppStoresModal: true })
-
-      // this.appStoreRedirect = window.setTimeout(() => {
-      //   window.location.href = appStoreUrl
-      // }, 1000);
     } else {
       analytics.trackEvent('click_save', this.props.articleId, {
         platform
@@ -503,7 +498,7 @@ export class Player extends React.PureComponent<Props, State> {
                 <h1 className="Player__title" style={titleThemeStyle}>
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
-                <a href={URL_PLAYPOST_WEBSITE} className="Player__branding">by Playpost</a>
+                <a href={URL_PLAYPOST_WEBSITE} className="Player__branding" target="_blank">by Playpost</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (
