@@ -121,6 +121,9 @@ export class Player extends React.PureComponent<Props, State> {
     console.log('Playpost Player Init: Using platform: ', platform)
     console.log('Playpost Player Init: Type: ', type)
 
+    this.setupPlayerJSInteractions()
+    this.setupPostMessageResizing()
+
   }
 
   componentWillUnmount() {
@@ -128,6 +131,44 @@ export class Player extends React.PureComponent<Props, State> {
       window.clearTimeout(this.appStoreRedirect)
       this.appStoreRedirect = null
     }
+  }
+
+  setupPostMessageResizing = () => {
+    // https://docs.embed.ly/v1.0/docs/provider-height-resizing
+    // Needed for Medium.com
+    window.addEventListener('resize', () => {
+      console.log('Playpost Player: Resize.')
+      window.parent.postMessage(JSON.stringify({ 
+        src: window.location.toString(),
+        context: 'iframe.resize',
+        height: 115 // the player container height in css
+      }), '*')
+    })
+
+    // https://docs.embed.ly/v1.0/docs/native
+    window.addEventListener('message', (e) => {
+      var data;
+
+      try {
+        data = JSON.parse(e.data);
+      } catch (e) {
+        return false;
+      }
+
+      if (data.context !== 'iframe.resize') {
+        return false;
+      }
+
+      var iframe = document.querySelector('iframe[src="' + data.src + '"]');
+
+      if (!iframe) {
+        return false;
+      }
+
+      if (data.height) {
+        iframe.setAttribute('height', data.height);
+      }
+    });
   }
 
   /**
