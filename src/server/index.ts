@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express'
 import path from 'path';
 import ejs from 'ejs';
 import NodeCache from 'node-cache';
+import nodeFetch from 'node-fetch';
 import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
@@ -150,6 +151,30 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
   }
 
 });
+
+app.all('/health', rateLimited, async (req: Request, res: Response) => {
+  let apiStatus = 'fail';
+  let apiMessage = '';
+
+  const responseOk = await nodeFetch(`https://api.playpost.app/health`, { method: 'head' }).then((response) => response.ok);
+
+  if (responseOk) {
+    apiStatus = 'ok';
+  } else {
+    apiStatus = 'Reponse not OK';
+  }
+
+  return res.json({
+    status: 'ok',
+    version,
+    services: {
+      api: apiStatus
+    },
+    messages: {
+      api: apiMessage
+    }
+  });
+})
 
 app.all('*', rateLimited, (req: Request, res: Response) => {
   return res.status(404).send('Not found.');
