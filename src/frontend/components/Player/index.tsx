@@ -503,7 +503,7 @@ export class Player extends React.PureComponent<Props, State> {
                 <h1 className="Player__title" style={titleThemeStyle}>
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
-                <a href={URL_PLAYPOST_WEBSITE} className="Player__branding" target="_blank">by Playpost</a>
+                <a href={URL_PLAYPOST_WEBSITE} className="Player__branding" target="_blank" rel="noopener noreferrer">by Playpost</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (
