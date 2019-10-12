@@ -108,8 +108,6 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
       return res.send(cachedPage)
     }
 
-    console.log(articleId, `Getting article from API...`)
-
     const { article, audiofile } = await api.findArticleById(articleId, audiofileId);
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
