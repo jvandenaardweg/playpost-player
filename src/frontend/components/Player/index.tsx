@@ -123,6 +123,7 @@ export class Player extends React.PureComponent<Props, State> {
 
     this.setupPlayerJSInteractions()
     this.setupPostMessageResizing()
+    this.sendResizePostMessage()
 
   }
 
@@ -133,16 +134,21 @@ export class Player extends React.PureComponent<Props, State> {
     }
   }
 
+  sendResizePostMessage = () => {
+    // Needed to get correct height on Medium.com
+    window.parent.postMessage(JSON.stringify({ 
+      src: window.location.toString(),
+      context: 'iframe.resize',
+      height: 115 // the player container height in css
+    }), '*')
+  }
+
   setupPostMessageResizing = () => {
     // https://docs.embed.ly/v1.0/docs/provider-height-resizing
     // Needed for Medium.com
     window.addEventListener('resize', () => {
       console.log('Playpost Player: Resize.')
-      window.parent.postMessage(JSON.stringify({ 
-        src: window.location.toString(),
-        context: 'iframe.resize',
-        height: 115 // the player container height in css
-      }), '*')
+      this.sendResizePostMessage()
     })
 
     // https://docs.embed.ly/v1.0/docs/native
