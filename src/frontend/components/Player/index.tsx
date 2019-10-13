@@ -392,29 +392,14 @@ export class Player extends React.PureComponent<Props, State> {
     const { platform } = this.state
     const { articleId, articleTitle } = this.props
 
-    // First, try our direct app link
-    // Note:
-    // 1. this direct app link does not work on embeds inside the Medium app, for example
-    // 2. But it does work on normal website embeds
     // @ts-ignore
-    window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`
+    window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
+    // window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`
 
-    // Fallback to using our univeral link
-    // This is needed with in the Medium app
-    setTimeout(() => {
-      // @ts-ignore
-      window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
-    }, 500)
-
-
-    // if (window.location.href) {
-    //   window.location.href = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
-    // } else {
+    // setTimeout(() => {
     //   // @ts-ignore
-    //   window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
-    // }
-
-    // this.trickOpenDeeplink()
+    //   window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
+    // }, 500)
 
     const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
