@@ -1,8 +1,10 @@
 import nodeFetch from 'node-fetch';
 import { Api } from '../../@types/playpost-api';
 
+import { logger } from '../utils/logger';
+
 export const findArticleById = async (articleId: string, audiofileId: string): Promise<{article: Api.Article, audiofile: Api.Audiofile}> => {
-  console.log(articleId, `Getting article from API...`)
+  logger.info(articleId, `Getting article from API...`);
 
   const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
     method: 'get',

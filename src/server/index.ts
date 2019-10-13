@@ -9,12 +9,14 @@ import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import md5 from 'md5';
 
+import { logger } from './utils/logger';
+
 import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 
-console.log('Server Init: Version: ', version)
+logger.info('Server Init: Version: ', version)
 
 const app = express();
 
@@ -41,6 +43,7 @@ const rateLimited = new ExpressRateLimit({
     return uniqueKey;
   },
   handler: (req: Request, res: Response, next: NextFunction) => {
+    logger.warn('Rated limited IP address: ', getRealUserIpAddress(req));
     return res.status(429).send('Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again later.');
   }
 });
@@ -74,9 +77,6 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
-  console.log('Request query: ', req.query)
-  console.log('Request params: ', req.params)
-
   if (!articleId) {
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
@@ -99,7 +99,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
     const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
 
     if (deleteCache) {
-      console.log(articleId, `Removing cache.`)
+      logger.info(articleId, `Removing cache.`)
       cache.del(cacheKey)
     }
 
@@ -107,9 +107,12 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
     // If we have a cached version, return that
     if (cachedPage) {
-      console.log(articleId, `Returning cached version.`)
+      logger.info(articleId, `Returning cached version.`)
       return res.send(cachedPage)
     }
+
+    logger.info('Request query: ', req.query)
+    logger.info('Request params: ', req.params)
 
     const { article, audiofile } = await api.findArticleById(articleId, audiofileId);
 
@@ -125,7 +128,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
     cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
 
-    console.log(articleId, `Returning rendered embed page.`)
+    logger.info(articleId, `Returning rendered embed page.`)
 
     // Send the HTML page to the user
     return res.send(embedPageRendered)
@@ -133,7 +136,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
     const isApiUnavailable = err && err.code === 'ECONNREFUSED'
     const errorMessage = err && err.message
 
-    console.log(articleId, err)
+    logger.error(articleId, err)
 
     const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
     const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
@@ -183,6 +186,6 @@ app.all('*', rateLimited, (req: Request, res: Response) => {
 
 const port = process.env.PORT || 8080;
 
-console.log('Server init on port:', port);
+logger.info('Server init on port:', port);
 
 app.listen(port);
