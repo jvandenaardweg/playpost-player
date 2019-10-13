@@ -393,7 +393,8 @@ export class Player extends React.PureComponent<Props, State> {
     const { articleId, articleTitle } = this.props
 
     // @ts-ignore
-    window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`
+    // window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`
+    window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
 
     // if (window.location.href) {
     //   window.location.href = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
@@ -506,9 +507,7 @@ export class Player extends React.PureComponent<Props, State> {
                 <h1 className="Player__title" style={titleThemeStyle}>
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
-                <a href={`playpost://playlist/add/${this.props.articleId}/?title=${this.props.articleTitle}`} className="Player__branding">by Playpost</a>
-                <a href={`https://playpost.app/playlist/add/${this.props.articleId}/?title=${this.props.articleTitle}`} className="Player__branding">by Playpost</a>
-                <a href="https://playpost.app/playlist/add" target="_top" className="Player__branding">by Playpost</a>
+                <a href="https://playpost.app/" target="_top" className="Player__branding">by Playpost</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (

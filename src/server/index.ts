@@ -74,6 +74,9 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
+  console.log('Request query: ', req.query)
+  console.log('Request params: ', req.params)
+
   if (!articleId) {
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
