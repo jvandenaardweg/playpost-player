@@ -403,6 +403,8 @@ export class Player extends React.PureComponent<Props, State> {
     //   window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`;
     // }
 
+    // this.trickOpenDeeplink()
+
     const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
     if (appStoreUrl) {
@@ -421,6 +423,28 @@ export class Player extends React.PureComponent<Props, State> {
     }
 
   }
+
+  // trickOpenDeeplink = () => {
+  //   const { articleId, articleTitle} = this.props;
+
+  //   const iframe = document.createElement("iframe");
+  //   // Prefer to use univeral linking, as this works in the Medium App
+  //   const deeplinkUrl = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}`;
+
+  //   iframe.id = "app_call_frame";
+  //   iframe.style.border = "none";
+  //   iframe.style.width = "1px";
+  //   iframe.style.height = "1px";
+  //   iframe.onload = () => {
+  //     // @ts-ignore
+  //     document.location = deeplinkUrl;
+  //   };
+  //   iframe.src = deeplinkUrl; //iOS app schema url
+
+  //   window.onload = function(){
+  //     document.body.appendChild(iframe);
+  //   }
+  // }
 
   handleOnClickCloseAppStoresModal = () => {
     this.setState({ showAppStoresModal: false })
@@ -508,6 +532,10 @@ export class Player extends React.PureComponent<Props, State> {
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
                 <a href="https://playpost.app/" target="_top" className="Player__branding">by Playpost</a>
+                <a href={`playpost://playlist/add/${this.props.articleId}/?title=${this.props.articleTitle}`} target="_top" className="Player__branding">top</a>
+                <a href={`playpost://playlist/add/${this.props.articleId}/?title=${this.props.articleTitle}`} target="_parent" className="Player__branding">parent</a>
+                <a href={`playpost://playlist/add/${this.props.articleId}/?title=${this.props.articleTitle}`} target="_self" className="Player__branding">self</a>
+                <a href={`playpost://playlist/add/${this.props.articleId}`} target="_top" className="Player__branding">top2</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (
