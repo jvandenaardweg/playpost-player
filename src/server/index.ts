@@ -34,16 +34,17 @@ const rateLimited = new ExpressRateLimit({
     const userAgent = req.get('User-Agent');
     const userAcceptLanguage = req.get('Accept-Language');
     const userAccept = req.get('Accept');
-    const userReferer = req.get('Referer');
 
     // Create a unique key based on the user browser data
     // This is not perfect, but this might be the closest we get to a unique user
-    const uniqueKey = md5(ipAddressOfUser + userAgent + userAcceptLanguage + userAccept + userReferer);
+    const uniqueKey = md5(ipAddressOfUser + userAgent + userAcceptLanguage + userAccept);
 
     return uniqueKey;
   },
-  handler: (req: Request, res: Response, next: NextFunction) => {
-    logger.warn('Rated limited IP address: ', getRealUserIpAddress(req));
+  handler: function (req: Request, res: Response, next: NextFunction) {
+    const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
+    const loggerPrefix = req.path + ' -';
+    logger.warn(loggerPrefix, 'Rated limited: ', `Key: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
     return res.status(429).send('Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again later.');
   }
 });
@@ -74,6 +75,7 @@ app.get('/ping', rateLimited, (req: Request, res: Response) => {
 app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
   const { articleId, audiofileId } = req.params;
+  const loggerPrefix = req.path + ' -';
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -99,7 +101,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
     const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
 
     if (deleteCache) {
-      logger.info(articleId, `Removing cache.`)
+      logger.info(loggerPrefix, `Removing cache.`)
       cache.del(cacheKey)
     }
 
@@ -107,12 +109,11 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
     // If we have a cached version, return that
     if (cachedPage) {
-      logger.info(articleId, `Returning cached version.`)
+      logger.info(loggerPrefix, `Returning cached version.`)
       return res.send(cachedPage)
     }
 
-    logger.info('Request query: ', req.query)
-    logger.info('Request params: ', req.params)
+    logger.info(loggerPrefix, 'Request query: ', req.query)
 
     const { article, audiofile } = await api.findArticleById(articleId, audiofileId);
 
@@ -128,7 +129,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
 
     cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
 
-    logger.info(articleId, `Returning rendered embed page.`)
+    logger.info(loggerPrefix, `Returning rendered embed page.`)
 
     // Send the HTML page to the user
     return res.send(embedPageRendered)
@@ -136,7 +137,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
     const isApiUnavailable = err && err.code === 'ECONNREFUSED'
     const errorMessage = err && err.message
 
-    logger.error(articleId, err)
+    logger.error(loggerPrefix, err)
 
     const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
     const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
