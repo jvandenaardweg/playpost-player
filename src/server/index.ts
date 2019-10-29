@@ -68,6 +68,11 @@ app.use('/favicon.ico', serveStatic(path.join(__dirname, '../../../build-fronten
   maxAge: 31536000,
 }));
 
+app.use('/oembed.png', serveStatic(path.join(__dirname, '../../../build-frontend/oembed.png'), {
+  cacheControl: true,
+  maxAge: 31536000,
+}));
+
 app.get('/ping', rateLimited, (req: Request, res: Response) => {
   return res.send('pong');
 });
