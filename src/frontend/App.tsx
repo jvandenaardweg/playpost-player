@@ -18,11 +18,6 @@ const App: React.FC = () => {
 
   const isCorrectColorCode = (colorCode: string): boolean => {
     const colorCodeLowerCase = colorCode.toLowerCase();
-
-    if (colorCodeLowerCase === 'transparent') {
-      return true;
-    }
-
     const hex = `#${colorCodeLowerCase}`;
     const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
     return regex.test(hex);
