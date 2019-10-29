@@ -29,13 +29,14 @@ export interface PlayerThemeOptions {
   trackBackgroundColor: string;
   trackThumbColor: string;
   trackLabelBackgroundColor: string;
+  borderRadius: string;
+  padding: string;
 }
 
 export interface PlayerOptions {
   hideTitle: boolean;
   hidePlaylistButton: boolean;
   hideProgressTime: boolean;
-  noPadding: boolean;
   autoplay: boolean;
 }
 
@@ -439,7 +440,7 @@ export class Player extends React.PureComponent<Props, State> {
     const { articleTitle, themeOptions, playerOptions } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
-    const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor, padding: playerOptions.noPadding ? 0 : '18px' }
+    const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor, padding: themeOptions.padding, borderRadius: themeOptions.borderRadius }
     const titleThemeStyle: React.CSSProperties = { color: themeOptions.titleColor }
     const trackThumbStyle: React.CSSProperties = { backgroundColor: themeOptions.trackThumbColor }
     const trackLabelStyle: React.CSSProperties = { backgroundColor: themeOptions.trackLabelBackgroundColor }

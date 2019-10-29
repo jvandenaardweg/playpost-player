@@ -35,7 +35,6 @@ const App: React.FC = () => {
       hideTitle: false,
       hidePlaylistButton: false,
       hideProgressTime: false,
-      noPadding: false,
       autoplay: false
     }
 
@@ -73,12 +72,14 @@ const App: React.FC = () => {
 
     const defaultOptions: PlayerThemeOptions = {
       buttonColor: '#0066FF', // tintColor
-      backgroundColor: '#ffffff',
+      backgroundColor: 'transparent',
       borderColor: '#e5e5e5', // grayLight
       titleColor: '#000000',
       trackBackgroundColor: '#000000',
       trackThumbColor: '#000000',
-      trackLabelBackgroundColor: '#000000'
+      trackLabelBackgroundColor: '#000000',
+      borderRadius: '6px',
+      padding: '18px'
     }
 
     let options: PlayerThemeOptions = {
@@ -87,10 +88,10 @@ const App: React.FC = () => {
 
     for (const [key] of Object.entries(defaultOptions)) {
       const paramValue = urlParams.get(key)
-      if (paramValue && isCorrectColorCode(paramValue)) {
+      if (paramValue) {
         options = {
           ...options,
-          [key]: (paramValue === 'transparent') ? paramValue : `#${paramValue}`
+          [key]: isCorrectColorCode(paramValue) ? `#${paramValue}` : paramValue
         }
       }
     }
