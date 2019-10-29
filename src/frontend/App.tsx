@@ -17,7 +17,13 @@ const App: React.FC = () => {
   const audiofile: Api.Audiofile | null = (typeof window !== 'undefined' && window.audiofile) ? window.audiofile : null;
 
   const isCorrectColorCode = (colorCode: string): boolean => {
-    const hex = `#${colorCode}`;
+    const colorCodeLowerCase = colorCode.toLowerCase();
+
+    if (colorCodeLowerCase === 'transparent') {
+      return true;
+    }
+
+    const hex = `#${colorCodeLowerCase}`;
     const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/
     return regex.test(hex);
   }
@@ -84,7 +90,7 @@ const App: React.FC = () => {
       if (paramValue && isCorrectColorCode(paramValue)) {
         options = {
           ...options,
-          [key]: `#${paramValue}`
+          [key]: (paramValue === 'transparent') ? paramValue : `#${paramValue}`
         }
       }
     }
