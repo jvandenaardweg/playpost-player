@@ -37,6 +37,7 @@ export interface PlayerOptions {
   hideTitle: boolean;
   hidePlaylistButton: boolean;
   hideProgressTime: boolean;
+  hideTrack: boolean;
   autoplay: boolean;
 }
 
@@ -529,6 +530,7 @@ export class Player extends React.PureComponent<Props, State> {
                 trackThumbStyle={trackThumbStyle}
                 trackLabelStyle={trackLabelStyle}
                 hideProgressTime={playerOptions.hideProgressTime}
+                isVisible={!playerOptions.hideTrack}
               />
             </div>
           </div>

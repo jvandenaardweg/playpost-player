@@ -17,6 +17,7 @@ export interface Props {
   onRangeChange(values: number[]): void;
   onRangeFinalChange(values: number[]): void;
   hideProgressTime: boolean;
+  isVisible: boolean;
 }
 
 export const ProgressControl: React.FC<Props> = ({
@@ -32,10 +33,11 @@ export const ProgressControl: React.FC<Props> = ({
   themeOptions,
   trackThumbStyle,
   trackLabelStyle,
-  hideProgressTime
+  hideProgressTime,
+  isVisible
 }) => {
   return (
-    <div className="Player__progress-container">
+    <div className="Player__progress-container" style={{ display: isVisible ? 'flex' : 'none' }}>
       {!hideProgressTime && (
         <div className={`Player__progress-time Player__progress-time--played ${isPlaying ? 'is-playing' : ''}`}>
           <Duration seconds={duration * played} />

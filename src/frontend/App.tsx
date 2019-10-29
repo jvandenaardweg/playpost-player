@@ -32,9 +32,10 @@ const App: React.FC = () => {
     const urlParams = new window.URLSearchParams(window.location.search);
 
     const defaultOptions: PlayerOptions = {
-      hideTitle: false,
-      hidePlaylistButton: false,
-      hideProgressTime: false,
+      hideTitle: false, // Hides the article title, will show "Listen to this story" instead
+      hidePlaylistButton: false, // Hides the "Add to playlist" button
+      hideProgressTime: false, // Hides the times next to the progress bar
+      hideTrack: false, // Hides the progress bar with the times
       autoplay: false
     }
 
