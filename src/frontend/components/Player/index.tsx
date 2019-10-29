@@ -31,6 +31,7 @@ export interface PlayerThemeOptions {
   trackLabelBackgroundColor: string;
   borderRadius: string;
   padding: string;
+  buttonIconColor: string;
 }
 
 export interface PlayerOptions {
@@ -441,13 +442,14 @@ export class Player extends React.PureComponent<Props, State> {
     const { articleTitle, themeOptions, playerOptions } = this.props
 
     const buttonThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.buttonColor }
+    const playerStyle: React.CSSProperties = { borderRadius: themeOptions.borderRadius }
     const playerContainerThemeStyle: React.CSSProperties = { backgroundColor: themeOptions.backgroundColor, borderColor: themeOptions.borderColor, padding: themeOptions.padding, borderRadius: themeOptions.borderRadius }
     const titleThemeStyle: React.CSSProperties = { color: themeOptions.titleColor }
     const trackThumbStyle: React.CSSProperties = { backgroundColor: themeOptions.trackThumbColor }
     const trackLabelStyle: React.CSSProperties = { backgroundColor: themeOptions.trackLabelBackgroundColor }
 
     return (
-      <div className="Player">
+      <div className="Player" style={playerStyle}>
         {isError && (
           <Modal onClickClose={this.handleOnClickCloseErrorModal} />
         )}
@@ -498,8 +500,8 @@ export class Player extends React.PureComponent<Props, State> {
                 onClick={this.handleOnClickPlayPause}
                 style={buttonThemeStyle}
               >
-                {isLoading && <Icons.Loading />}
-                {!isLoading && isPlaying ? <Icons.Pause /> : !isLoading ? <Icons.Play /> : ''}
+                {isLoading && <Icons.Loading color={themeOptions.buttonIconColor} />}
+                {!isLoading && isPlaying ? <Icons.Pause color={themeOptions.buttonIconColor} /> : !isLoading ? <Icons.Play color={themeOptions.buttonIconColor} /> : ''}
               </button>
             </div>
             <div className="Player__info-container">

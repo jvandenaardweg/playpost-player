@@ -73,6 +73,7 @@ const App: React.FC = () => {
 
     const defaultOptions: PlayerThemeOptions = {
       buttonColor: '#0066FF', // tintColor
+      buttonIconColor: '#ffffff',
       backgroundColor: 'transparent',
       borderColor: '#e5e5e5', // grayLight
       titleColor: '#000000',

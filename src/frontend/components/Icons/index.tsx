@@ -1,26 +1,36 @@
 import React from 'react';
 
-export const Close: React.FC = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-)
+interface Props {
+  color?: string;
+}
 
-export const Pause: React.FC = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20">
-    <path fill="#FFF" fillRule="evenodd" d="M2.667 20c1.466 0 2.666-1.286 2.666-2.857V2.857C5.333 1.286 4.133 0 2.667 0 1.2 0 0 1.286 0 2.857v14.286C0 18.714 1.2 20 2.667 20zm8-17.143v14.286c0 1.571 1.2 2.857 2.666 2.857C14.8 20 16 18.714 16 17.143V2.857C16 1.286 14.8 0 13.333 0c-1.466 0-2.666 1.286-2.666 2.857z"/>
+export const Close: React.FC<Props> = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
   </svg>
 )
 
-export const Play: React.FC = () => (
+export const Pause: React.FC<Props> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20">
-    <path fill="#FFF" fillRule="evenodd" d="M0 1.551v16.047c0 1.224 1.372 1.968 2.429 1.302l12.838-8.024a1.535 1.535 0 0 0 0-2.618L2.429.25C1.372-.416 0 .327 0 1.551z"/>
+    <path fill={props.color ? props.color : '#ffffff'} fillRule="evenodd" d="M2.667 20c1.466 0 2.666-1.286 2.666-2.857V2.857C5.333 1.286 4.133 0 2.667 0 1.2 0 0 1.286 0 2.857v14.286C0 18.714 1.2 20 2.667 20zm8-17.143v14.286c0 1.571 1.2 2.857 2.666 2.857C14.8 20 16 18.714 16 17.143V2.857C16 1.286 14.8 0 13.333 0c-1.466 0-2.666 1.286-2.666 2.857z"/>
   </svg>
 )
 
-export const Settings: React.FC = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+export const Play: React.FC<Props> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20">
+    <path fill={props.color ? props.color : '#ffffff'} fillRule="evenodd" d="M0 1.551v16.047c0 1.224 1.372 1.968 2.429 1.302l12.838-8.024a1.535 1.535 0 0 0 0-2.618L2.429.25C1.372-.416 0 .327 0 1.551z"/>
+  </svg>
 )
 
-export const Loading: React.FC = () => (
+export const Settings: React.FC<Props> = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+)
+
+export const Loading: React.FC<Props> = (props) => (
   <svg
     className="loader"
     version="1.1"
@@ -33,11 +43,11 @@ export const Loading: React.FC = () => (
   >
     <path
       opacity="0.2"
-      fill="#fff"
+      fill={props.color ? props.color : '#ffffff'}
       d="M20.201,5.169c-8.254,0-14.946,6.692-14.946,14.946c0,8.255,6.692,14.946,14.946,14.946 s14.946-6.691,14.946-14.946C35.146,11.861,28.455,5.169,20.201,5.169z M20.201,31.749c-6.425,0-11.634-5.208-11.634-11.634 c0-6.425,5.209-11.634,11.634-11.634c6.425,0,11.633,5.209,11.633,11.634C31.834,26.541,26.626,31.749,20.201,31.749z"
     />
     <path
-      fill="#fff"
+      fill={props.color ? props.color : '#ffffff'}
       d="M26.013,10.047l1.654-2.866c-2.198-1.272-4.743-2.012-7.466-2.012h0v3.312h0 C22.32,8.481,24.301,9.057,26.013,10.047z">
       <animateTransform
         attributeType="xml"
