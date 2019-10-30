@@ -8,7 +8,7 @@ import * as analytics from '../../utils/analytics'
 
 import './index.scss'
 
-import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE, URL_PLAYPOST_WEBSITE } from '../../constants/urls';
+import { URL_PLAYPOST_WEBSITE } from '../../constants/urls';
 import { getPlatform } from '../../utils/platform';
 import { ButtonLink } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
