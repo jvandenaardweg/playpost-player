@@ -3,7 +3,58 @@ import { Api } from '../../@types/playpost-api';
 
 import { logger } from '../utils/logger';
 
-export const findArticleById = async (articleId: string, audiofileId: string): Promise<{article: Api.Article, audiofile: Api.Audiofile}> => {
+interface CachedPromise {
+  [key: string]: Promise<FindArticleByIdResult>
+}
+
+interface FindArticleByIdResult {
+  article: Api.Article,
+  audiofile: Api.Audiofile
+}
+
+const cachedPromises: CachedPromise = {};
+
+/**
+ * This method makes sure we re-use any active promise already happening.
+ * For example: when 10 calls are made, but the promise did not resolve yet, we'll use the same promise.
+ * So we do not fire massive amounts of calls to the API for the exact same data on high traffic websites.
+ *
+ * @param articleId
+ * @param audiofileId
+ */
+export const cachedFindArticleById = async (articleId: string, audiofileId: string): Promise<FindArticleByIdResult> => {
+  const id = articleId + audiofileId;
+
+  // Re-use the promise if it exists
+  if (cachedPromises[id]) {
+    logger.info(articleId, `Promise did not resolve yet. Re-using promise...`);
+    return cachedPromises[id]
+  }
+
+  // Add the promise if it does not exist yet
+  const promise = findArticleById(articleId, audiofileId)
+  .then((result) => {
+    // Delete promise from cache if it succeeds
+    delete cachedPromises[id]
+    return result;
+  })
+  .catch((err) => {
+    // Delete promise from cache on error
+    delete cachedPromises[id]
+    throw err;
+  })
+
+  // Cache the promise and re-use it until it get's fulfilled
+  return cachedPromises[id] = promise;
+}
+
+/**
+ * Method to get the article details from the API.
+ *
+ * @param articleId
+ * @param audiofileId
+ */
+export const findArticleById = async (articleId: string, audiofileId: string): Promise<FindArticleByIdResult> => {
   logger.info(articleId, `Getting article from API...`);
 
   const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
