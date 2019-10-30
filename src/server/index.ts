@@ -79,10 +79,13 @@ app.get('/ping', rateLimited, (req: Request, res: Response) => {
 });
 
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
-app.get('/v1/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
+app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited, async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
-  const { articleId, audiofileId } = req.params;
+  const { articleId, dirtyAudiofileId } = req.params;
   const loggerPrefix = req.path + ' -';
+
+  // embed.ly returns some crappy url containing "&format=json", we remove that part here
+  const audiofileId = dirtyAudiofileId.split('&')[0];
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -90,7 +93,7 @@ app.get('/v1/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (r
   logger.info(loggerPrefix, 'Request referer: ', req.headers.referer)
 
   if (!isUUID.v4(articleId)) {
-    const errorMessage = 'Please given a valid article ID.'
+    const errorMessage = `Please given a valid article ID. ${articleId} is not a valid article ID.`
 
     logger.error(loggerPrefix, errorMessage)
 
@@ -103,7 +106,7 @@ app.get('/v1/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (r
   }
 
   if (!isUUID.v4(audiofileId)) {
-    const errorMessage = 'Please given a valid audiofile ID for the article.'
+    const errorMessage = `Please given a valid audiofile ID for the article. ${audiofileId} is not a valid audiofile ID.`
 
     logger.error(loggerPrefix, errorMessage)
 
