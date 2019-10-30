@@ -7,6 +7,7 @@ interface Props {
   onClick(): void;
   href?: string;
   target?: string;
+  rel?: string;
 }
 
 export const Button: React.FC<Props> = ({ children, type, onClick, ...restProps }) => (

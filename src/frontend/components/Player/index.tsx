@@ -10,7 +10,7 @@ import './index.scss'
 
 import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE, URL_PLAYPOST_WEBSITE } from '../../constants/urls';
 import { getPlatform } from '../../utils/platform';
-import { Button, ButtonLink } from '../Button';
+import { ButtonLink } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
 import * as Icons from '../Icons';
 import { ProgressControl } from '../ProgressControl';
@@ -398,7 +398,7 @@ export class Player extends React.PureComponent<Props, State> {
 
   handleOnClickSave = () => {
     const { platform } = this.state
-    const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
+    // const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
     // this.setState({ showAppStoresModal: true })
 
@@ -500,12 +500,12 @@ export class Player extends React.PureComponent<Props, State> {
                 <h1 className="Player__title" style={titleThemeStyle}>
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
-                <a href="https://playpost.app/" target="_blank" className="Player__branding">by Playpost</a>
+                <a href="https://playpost.app/" target="_blank" className="Player__branding" rel="noopener noreferrer">by Playpost</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (
                 <div className="Player__top-actions-container">
-                  <ButtonLink href={this.getAddToPlaylistLink()} onClick={this.handleOnClickSave} target="_blank">Add to playlist</ButtonLink>
+                  <ButtonLink href={this.getAddToPlaylistLink()} onClick={this.handleOnClickSave} target="_blank" rel="noopener noreferrer">Add to playlist</ButtonLink>
                 </div>
               )}
 
