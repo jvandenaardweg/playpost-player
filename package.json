@@ -47,6 +47,7 @@
     "helmet": "^3.21.1",
     "html-webpack-plugin": "4.0.0-beta.5",
     "identity-obj-proxy": "3.0.0",
+    "is-uuid": "^1.0.2",
     "is-wsl": "^1.1.0",
     "jest": "24.9.0",
     "jest-environment-jsdom-fourteen": "0.1.0",
@@ -127,6 +128,7 @@
     ]
   },
   "devDependencies": {
+    "@types/is-uuid": "^1.0.0",
     "husky": "^3.0.9",
     "ts-node-dev": "^1.0.0-pre.43"
   },

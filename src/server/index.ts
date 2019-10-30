@@ -8,6 +8,7 @@ import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import md5 from 'md5';
+import isUUID from 'is-uuid';
 
 import { logger } from './utils/logger';
 
@@ -85,19 +86,30 @@ app.get('/v1/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (r
 
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
-  if (!articleId) {
+  logger.info(loggerPrefix, 'Request query: ', req.query)
+  logger.info(loggerPrefix, 'Request referer: ', req.headers.referer)
+
+  if (!isUUID.v4(articleId)) {
+    const errorMessage = 'Please given a valid article ID.'
+
+    logger.error(loggerPrefix, errorMessage)
+
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
-      description: 'Please given an article ID.'
+      description: errorMessage
     })
 
     return res.status(400).send(errorPageRendered);
   }
 
-  if (!audiofileId) {
+  if (!isUUID.v4(audiofileId)) {
+    const errorMessage = 'Please given a valid audiofile ID for the article.'
+
+    logger.error(loggerPrefix, errorMessage)
+
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
-      description: 'Please given an audiofile ID for the article.'
+      description: errorMessage
     })
 
     return res.status(400).send(errorPageRendered);
@@ -118,8 +130,6 @@ app.get('/v1/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (r
       logger.info(loggerPrefix, `Returning cached version.`)
       return res.send(cachedPage)
     }
-
-    logger.info(loggerPrefix, 'Request query: ', req.query)
 
     const { article, audiofile } = await api.cachedFindArticleById(articleId, audiofileId);
 
