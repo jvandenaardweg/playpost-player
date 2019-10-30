@@ -8,9 +8,9 @@ import * as analytics from '../../utils/analytics'
 
 import './index.scss'
 
-import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE } from '../../constants/urls';
+import { URL_APPLE_APP_STORE, URL_GOOGLE_PLAY_STORE, URL_PLAYPOST_WEBSITE } from '../../constants/urls';
 import { getPlatform } from '../../utils/platform';
-import { Button } from '../Button';
+import { Button, ButtonLink } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
 import * as Icons from '../Icons';
 import { ProgressControl } from '../ProgressControl';
@@ -391,36 +391,27 @@ export class Player extends React.PureComponent<Props, State> {
     window.location.reload()
   }
 
+  getAddToPlaylistLink = () => {
+    const { articleId, articleTitle } = this.props
+    return `${URL_PLAYPOST_WEBSITE}/playlist/add/${articleId}/?title=${articleTitle}`
+  }
+
   handleOnClickSave = () => {
     const { platform } = this.state
-    const { articleId, articleTitle } = this.props
-
-    // @ts-ignore
-    window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
-    // window.top.location = `playpost://playlist/add/${articleId}/?title=${articleTitle}`
-
-    // setTimeout(() => {
-    //   // @ts-ignore
-    //   window.top.location = `https://playpost.app/playlist/add/${articleId}/?title=${articleTitle}` // Prefer to use our univeral link
-    // }, 500)
-
     const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
-    if (appStoreUrl) {
-      analytics.trackEvent('click_save', this.props.articleId, {
-        platform,
-        appStoreUrl
-      })
+    // this.setState({ showAppStoresModal: true })
 
-      this.setState({ showAppStoresModal: true })
-    } else {
-      analytics.trackEvent('click_save', this.props.articleId, {
-        platform
-      })
+    // if (appStoreUrl) {
+    //   return analytics.trackEvent('click_save', this.props.articleId, {
+    //     platform,
+    //     appStoreUrl
+    //   })
+    // }
 
-      this.setState({ showAppStoresModal: true })
-    }
-
+    analytics.trackEvent('click_save', this.props.articleId, {
+      platform
+    })
   }
 
   handleOnClickCloseAppStoresModal = () => {
@@ -509,12 +500,12 @@ export class Player extends React.PureComponent<Props, State> {
                 <h1 className="Player__title" style={titleThemeStyle}>
                   {playerOptions.hideTitle ? 'Listen to this story' : articleTitle}
                 </h1>
-                <a href="https://playpost.app/" className="Player__branding">by Playpost</a>
+                <a href="https://playpost.app/" target="_blank" className="Player__branding">by Playpost</a>
               </div>
 
               {!playerOptions.hidePlaylistButton && (
                 <div className="Player__top-actions-container">
-                  <Button onClick={this.handleOnClickSave}>Add to playlist</Button>
+                  <ButtonLink href={this.getAddToPlaylistLink()} onClick={this.handleOnClickSave} target="_blank">Add to playlist</ButtonLink>
                 </div>
               )}
 

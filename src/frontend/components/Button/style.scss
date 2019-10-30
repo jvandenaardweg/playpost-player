@@ -12,6 +12,8 @@
   font-size: 14px;
   cursor: pointer;
   transition: 250ms all;
+  text-decoration: none;
+  line-height: 25px;
 
   &:hover {
     border-color: $black;
