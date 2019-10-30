@@ -20,6 +20,9 @@ logger.info('Server Init: Version: ', version)
 
 const app = express();
 
+// Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
+const v1Router = express.Router();
+
 const PLAYER_BASE_URL = process.env.PLAYER_BASE_URL || 'https://player.playpost.app';
 const CACHE_TTL = 60 * 60 * 24;
 
@@ -28,7 +31,7 @@ const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true
 const rateLimited = new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 20, // 15 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
+  max: 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
   keyGenerator: (req: Request) => {
     const ipAddressOfUser = getRealUserIpAddress(req);
     const userAgent = req.get('User-Agent');
@@ -77,7 +80,7 @@ app.get('/ping', rateLimited, (req: Request, res: Response) => {
   return res.send('pong');
 });
 
-app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
+v1Router.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
   const { articleId, audiofileId } = req.params;
   const loggerPrefix = req.path + ' -';
@@ -103,7 +106,7 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
   }
 
   try {
-    const cacheKey = `articles/${articleId}/audiofiles/${audiofileId}`;
+    const cacheKey = `v1/articles/${articleId}/audiofiles/${audiofileId}`;
 
     if (deleteCache) {
       logger.info(loggerPrefix, `Removing cache.`)
@@ -161,6 +164,8 @@ app.get('/articles/:articleId/audiofiles/:audiofileId', rateLimited, async (req:
   }
 
 });
+
+app.use('/v1', v1Router);
 
 app.all('/health', rateLimited, async (req: Request, res: Response) => {
   let apiStatus = 'fail';
