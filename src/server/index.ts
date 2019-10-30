@@ -45,8 +45,12 @@ const rateLimited = new ExpressRateLimit({
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
+
+    // @ts-ignore
+    const tryAfterDate = req.rateLimit.resetTime
+
     logger.warn(loggerPrefix, 'Rated limited: ', `Key: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
-    return res.status(429).send('Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again later.');
+    return res.status(429).send(`Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again after: ${tryAfterDate}`);
   }
 });
 
