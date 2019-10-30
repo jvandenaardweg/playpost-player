@@ -1,6 +1,6 @@
 {
   "name": "playpost-player",
-  "version": "1.4.46",
+  "version": "1.4.47",
   "private": true,
   "dependencies": {
     "@babel/core": "7.6.0",
