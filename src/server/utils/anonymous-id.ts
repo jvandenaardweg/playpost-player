@@ -13,14 +13,14 @@ import { getRealUserIpAddress } from "./ip-address";
  * @param req
  * @param publisherId
  */
-export const getAnonymousId = (req: Request, publisherId?: string): string => {
+export const getAnonymousUserId = (req: Request): string => {
   const ipAddressOfUser = getRealUserIpAddress(req);
   const userAgent = req.get('User-Agent');
   const userAcceptLanguage = req.get('Accept-Language');
   const userAccept = req.get('Accept');
   const userDoNotTrack = req.get('DNT');
 
-  const dataToHash = ipAddressOfUser + userAgent + userAcceptLanguage + userAccept + userDoNotTrack + publisherId;
+  const dataToHash = ipAddressOfUser + userAgent + userAcceptLanguage + userAccept + userDoNotTrack;
 
   // Create a unique key based on the user browser data
   // This is not perfect, but this might be the closest we get to a unique user

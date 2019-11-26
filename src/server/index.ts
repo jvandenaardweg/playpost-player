@@ -16,7 +16,7 @@ import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
-import { getAnonymousId } from './utils/anonymous-id';
+import { getAnonymousUserId } from './utils/anonymous-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -31,7 +31,7 @@ const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
   max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
-  keyGenerator: (req: Request) => getAnonymousId(req),
+  keyGenerator: (req: Request) => getAnonymousUserId(req),
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
@@ -83,30 +83,36 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
-    const { articleId, publisherId, audiofileId, event } = req.body;
-    const allowedEvents = ['view', 'play:0', 'play:25', 'play:75', 'play:100', 'playlist:add', 'seek', 'pause'];
+    const { articleId, audiofileId, event } = req.body;
+    const allowedEvents = ['view', 'play:begin', 'play:end', 'play:25', 'play:75', 'play:100', 'playlist:add', 'pause'];
 
     if (!isUUID.v4(articleId)) {
-      return res.status(400).json({
-        message: 'articleId is not a valid UUID.'
-      });
-    }
+      const errorMessage = 'articleId is not a valid UUID.';
 
-    if (!isUUID.v4(publisherId)) {
+      logger.error(loggerPrefix, errorMessage, req.body);
+
       return res.status(400).json({
-        message: 'publisherId is not a valid UUID.'
+        message: errorMessage
       });
     }
 
     if (!isUUID.v4(audiofileId)) {
+      const errorMessage = 'audiofileId is not a valid UUID.';
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
       return res.status(400).json({
-        message: 'audiofileId is not a valid UUID.'
+        message: errorMessage
       });
     }
 
     if (!allowedEvents.includes(event)) {
+      const errorMessage = `event is not valid. Please one of: ${allowedEvents.join(', ')}`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
       return res.status(400).json({
-        message: `event is not valid. Please one of: ${allowedEvents.join(', ')}`
+        message: errorMessage
       });
     }
 
@@ -116,19 +122,18 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     const countryCode = geo ? geo.country : null;
     const regionCode = geo ? geo.region : null;
     const city = geo ? geo.city : null;
-    const anonymousId = getAnonymousId(req, publisherId); // Make user unique for each publisher
+    const anonymousUserId = getAnonymousUserId(req); // Make user unique for each publisher
     const value = 1; // keep value here, so it's not "hackable"
     const createdAt = new Date();
 
     const eventData = {
       articleId,
-      publisherId,
       audiofileId,
       event,
       countryCode,
       regionCode,
       city,
-      anonymousId,
+      anonymousUserId,
       value,
       createdAt
     }
@@ -139,6 +144,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       message: 'OK'
     })
   } catch (err) {
+    logger.error(loggerPrefix, err.message, req.body);
+
     return res.status(500).json({
       message: err.message
     })

@@ -120,6 +120,7 @@ const App: React.FC = () => {
     <div className="App">
       <Player
         articleId={article.id}
+        audiofileId={audiofile.id}
         articleTitle={article.title}
         articleUrl={article.canonicalUrl || article.url}
         articleSourceName={article.sourceName}
