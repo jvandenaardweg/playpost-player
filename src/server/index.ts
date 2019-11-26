@@ -16,7 +16,7 @@ import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
-import { createAnonymousId } from './utils/anonymous-id';
+import { getAnonymousId } from './utils/anonymous-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -27,17 +27,11 @@ const CACHE_TTL = 60 * 60 * 24;
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
-const rateLimited = new ExpressRateLimit({
+const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
-  keyGenerator: (req: Request) => {
-    // Create a unique key based on the user browser data
-    // This is not perfect, but this might be the closest we get to a unique user
-    const uniqueKey = createAnonymousId(req);
-
-    return uniqueKey;
-  },
+  max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
+  keyGenerator: (req: Request) => getAnonymousId(req),
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
@@ -76,14 +70,16 @@ app.use('/oembed.png', serveStatic(path.join(__dirname, '../../../build-frontend
   maxAge: 31536000,
 }));
 
-app.get('/ping', rateLimited, (req: Request, res: Response) => {
+app.get('/ping', rateLimited(20), (req: Request, res: Response) => {
   return res.send('pong');
 });
 
 /**
- * Method to track some anonymous analytics
+ * Method to track some anonymous analytics.
+ *
+ * We'll rate limit this tracking to 60 per minute, that's 1 per second, seems to be enough and prevent flooding.
  */
-app.post('/v1/track', (req: Request, res: Response) => {
+app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
@@ -114,7 +110,7 @@ app.post('/v1/track', (req: Request, res: Response) => {
     const countryCode = geo ? geo.country : null;
     const regionCode = geo ? geo.region : null;
     const city = geo ? geo.city : null;
-    const anonymousId = createAnonymousId(req);
+    const anonymousId = getAnonymousId(req, publisherId); // Make user unique for each publisher
     const value = 1; // keep value here, so it's not "hackable"
 
     const eventData = {
@@ -142,7 +138,7 @@ app.post('/v1/track', (req: Request, res: Response) => {
 })
 
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
-app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited, async (req: Request, res: Response) => {
+app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20), async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
   const { articleId, dirtyAudiofileId } = req.params;
   const loggerPrefix = req.path + ' -';
@@ -239,7 +235,7 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited, asy
 
 });
 
-app.all('/health', rateLimited, async (req: Request, res: Response) => {
+app.all('/health', rateLimited(20), async (req: Request, res: Response) => {
   let apiStatus = 'fail';
   let apiMessage = '';
 
@@ -263,7 +259,7 @@ app.all('/health', rateLimited, async (req: Request, res: Response) => {
   });
 })
 
-app.all('*', rateLimited, (req: Request, res: Response) => {
+app.all('*', rateLimited(20), (req: Request, res: Response) => {
   return res.status(404).send('Not found.');
 })
 
