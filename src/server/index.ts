@@ -8,6 +8,7 @@ import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
+import geoipLite from 'geoip-lite';
 
 import { logger } from './utils/logger';
 
@@ -108,9 +109,11 @@ app.post('/v1/track', (req: Request, res: Response) => {
     }
 
     // All ok, proceed
-
-    const languageCode = 'nl';
-    const countryCode = 'nl';
+    const ipAddress = getRealUserIpAddress(req);
+    const geo = geoipLite.lookup(ipAddress);
+    const countryCode = geo ? geo.country : null;
+    const regionCode = geo ? geo.region : null;
+    const city = geo ? geo.city : null;
     const anonymousId = createAnonymousId(req);
     const value = 1; // keep value here, so it's not "hackable"
 
@@ -118,8 +121,9 @@ app.post('/v1/track', (req: Request, res: Response) => {
       articleId,
       publisherId,
       event,
-      languageCode,
       countryCode,
+      regionCode,
+      city,
       anonymousId,
       value
     }
