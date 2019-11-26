@@ -83,7 +83,7 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
-    const { articleId, publisherId, event } = req.body;
+    const { articleId, publisherId, audiofileId, event } = req.body;
     const allowedEvents = ['view', 'play:0', 'play:25', 'play:75', 'play:100', 'playlist:add', 'seek', 'pause'];
 
     if (!isUUID.v4(articleId)) {
@@ -95,6 +95,12 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     if (!isUUID.v4(publisherId)) {
       return res.status(400).json({
         message: 'publisherId is not a valid UUID.'
+      });
+    }
+
+    if (!isUUID.v4(audiofileId)) {
+      return res.status(400).json({
+        message: 'audiofileId is not a valid UUID.'
       });
     }
 
@@ -112,16 +118,19 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     const city = geo ? geo.city : null;
     const anonymousId = getAnonymousId(req, publisherId); // Make user unique for each publisher
     const value = 1; // keep value here, so it's not "hackable"
+    const createdAt = new Date();
 
     const eventData = {
       articleId,
       publisherId,
+      audiofileId,
       event,
       countryCode,
       regionCode,
       city,
       anonymousId,
-      value
+      value,
+      createdAt
     }
 
     logger.info(loggerPrefix, 'Track this: ', eventData);
