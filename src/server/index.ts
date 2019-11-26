@@ -16,6 +16,7 @@ import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
+import { createAnonymousId } from './utils/anonymous-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -31,14 +32,9 @@ const rateLimited = new ExpressRateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
   keyGenerator: (req: Request) => {
-    const ipAddressOfUser = getRealUserIpAddress(req);
-    const userAgent = req.get('User-Agent');
-    const userAcceptLanguage = req.get('Accept-Language');
-    const userAccept = req.get('Accept');
-
     // Create a unique key based on the user browser data
     // This is not perfect, but this might be the closest we get to a unique user
-    const uniqueKey = md5(ipAddressOfUser + userAgent + userAcceptLanguage + userAccept);
+    const uniqueKey = createAnonymousId(req);
 
     return uniqueKey;
   },
@@ -81,6 +77,42 @@ app.use('/oembed.png', serveStatic(path.join(__dirname, '../../../build-frontend
 app.get('/ping', rateLimited, (req: Request, res: Response) => {
   return res.send('pong');
 });
+
+/**
+ * Method to track some anonymous analytics
+ */
+app.post('/v1/track', (req: Request, res: Response) => {
+  const loggerPrefix = req.path + ' -';
+  const { articleId, publisherId, event } = req.body;
+  const allowedEvents = ['view', 'play:0', 'play:25', 'play:75', 'play:100', 'playlist:add', 'seek', 'pause'];
+
+  if (!isUUID.v4(articleId)) {
+    return res.status(400).json({
+      message: 'articleId is not a valid UUID.'
+    });
+  }
+
+  if (!isUUID.v4(publisherId)) {
+    return res.status(400).json({
+      message: 'publisherId is not a valid UUID.'
+    });
+  }
+
+  if (!allowedEvents.includes(event)) {
+    return res.status(400).json({
+      message: `event is not valid. Please one of: ${allowedEvents.join(',')}`
+    });
+  }
+
+  // All ok, proceed
+
+  const languageCode = 'nl';
+  const countryCode = 'nl';
+  const anonymousId = createAnonymousId(req);
+  const value = 1;
+
+  logger.info(loggerPrefix, 'Track: ', articleId, publisherId, event, languageCode, countryCode, anonymousId, value);
+})
 
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
 app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited, async (req: Request, res: Response) => {
