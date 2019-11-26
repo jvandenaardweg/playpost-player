@@ -2,6 +2,10 @@
   "name": "playpost-player",
   "version": "1.4.57",
   "private": true,
+  "engines": {
+    "node": "^12.13.0",
+    "npm": "^6.8.0"
+  },
   "dependencies": {
     "@babel/core": "7.6.0",
     "@svgr/webpack": "4.3.2",
