@@ -6,5 +6,15 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
     value
   }
 
-  return fetch('https://player.playpost.app/v1/track', { method: 'POST', body: JSON.stringify(eventData) })
+  return fetch(
+    'https://player.playpost.app/v1/track',
+    {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(eventData)
+    }
+  )
 }
