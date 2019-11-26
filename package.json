@@ -1,6 +1,6 @@
 {
   "name": "playpost-player",
-  "version": "1.4.57",
+  "version": "1.4.58",
   "private": true,
   "engines": {
     "node": "^12.13.0",
