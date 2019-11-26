@@ -53,6 +53,8 @@ app.use(helmet({
   frameguard: false // We need iframe support enabled for the embed
 }))
 
+app.use(express.json())
+
 app.set('etag', false)
 
 app.set('view engine', 'ejs');
@@ -82,39 +84,57 @@ app.get('/ping', rateLimited, (req: Request, res: Response) => {
  */
 app.post('/v1/track', (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
-  const { articleId, publisherId, event } = req.body;
-  const allowedEvents = ['view', 'play:0', 'play:25', 'play:75', 'play:100', 'playlist:add', 'seek', 'pause'];
 
-  if (!isUUID.v4(articleId)) {
-    return res.status(400).json({
-      message: 'articleId is not a valid UUID.'
-    });
+  try {
+    const { articleId, publisherId, event } = req.body;
+    const allowedEvents = ['view', 'play:0', 'play:25', 'play:75', 'play:100', 'playlist:add', 'seek', 'pause'];
+
+    if (!isUUID.v4(articleId)) {
+      return res.status(400).json({
+        message: 'articleId is not a valid UUID.'
+      });
+    }
+
+    if (!isUUID.v4(publisherId)) {
+      return res.status(400).json({
+        message: 'publisherId is not a valid UUID.'
+      });
+    }
+
+    if (!allowedEvents.includes(event)) {
+      return res.status(400).json({
+        message: `event is not valid. Please one of: ${allowedEvents.join(', ')}`
+      });
+    }
+
+    // All ok, proceed
+
+    const languageCode = 'nl';
+    const countryCode = 'nl';
+    const anonymousId = createAnonymousId(req);
+    const value = 1; // keep value here, so it's not "hackable"
+
+    const eventData = {
+      articleId,
+      publisherId,
+      event,
+      languageCode,
+      countryCode,
+      anonymousId,
+      value
+    }
+
+    logger.info(loggerPrefix, 'Track this: ', eventData);
+
+    return res.json({
+      message: 'OK'
+    })
+  } catch (err) {
+    return res.status(500).json({
+      message: err.message
+    })
   }
 
-  if (!isUUID.v4(publisherId)) {
-    return res.status(400).json({
-      message: 'publisherId is not a valid UUID.'
-    });
-  }
-
-  if (!allowedEvents.includes(event)) {
-    return res.status(400).json({
-      message: `event is not valid. Please one of: ${allowedEvents.join(',')}`
-    });
-  }
-
-  // All ok, proceed
-
-  const languageCode = 'nl';
-  const countryCode = 'nl';
-  const anonymousId = createAnonymousId(req);
-  const value = 1;
-
-  logger.info(loggerPrefix, 'Track: ', articleId, publisherId, event, languageCode, countryCode, anonymousId, value);
-
-  return res.json({
-    message: 'Done!'
-  })
 })
 
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
