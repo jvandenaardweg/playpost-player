@@ -129,6 +129,7 @@
     ]
   },
   "devDependencies": {
+    "@types/geoip-lite": "^1.1.29",
     "@types/is-uuid": "^1.0.0",
     "husky": "^3.0.9",
     "ts-node-dev": "^1.0.0-pre.43"
