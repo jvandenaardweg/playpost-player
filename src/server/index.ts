@@ -7,7 +7,6 @@ import nodeFetch from 'node-fetch';
 import serveStatic from 'serve-static';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
-import md5 from 'md5';
 import isUUID from 'is-uuid';
 
 import { logger } from './utils/logger';
@@ -112,6 +111,10 @@ app.post('/v1/track', (req: Request, res: Response) => {
   const value = 1;
 
   logger.info(loggerPrefix, 'Track: ', articleId, publisherId, event, languageCode, countryCode, anonymousId, value);
+
+  return res.json({
+    message: 'Done!'
+  })
 })
 
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
