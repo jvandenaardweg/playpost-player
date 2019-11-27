@@ -84,7 +84,7 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
 
   try {
     const { articleId, audiofileId, event, device } = req.body;
-    const allowedEvents = ['view', 'play:begin', 'play:end', 'play:25', 'play:75', 'play:100', 'playlist:add', 'pause'];
+    const allowedEvents = ['view', 'play:begin', 'play:end', 'play:25', 'play:50', 'play:75', 'play:100', 'playlist:add', 'pause'];
     const allowedDevices = ['mobile', 'desktop', 'tablet', 'wearable', 'smarttv', 'console'];
 
     if (!isUUID.v4(articleId)) {

@@ -379,13 +379,19 @@ export class Player extends React.PureComponent<Props, State> {
     if (percentagePlayed >= 25 && !played25Percent) {
       analytics.trackEvent('play:25', articleId, audiofileId);
       this.setState({ played25Percent: true });
-    } else if (percentagePlayed >= 50 && !played50Percent) {
+    }
+
+    if (percentagePlayed >= 50 && !played50Percent) {
       analytics.trackEvent('play:50', articleId, audiofileId);
       this.setState({ played50Percent: true });
-    } else if (percentagePlayed >= 75 && !played75Percent) {
+    }
+
+    if (percentagePlayed >= 75 && !played75Percent) {
       analytics.trackEvent('play:75', articleId, audiofileId);
       this.setState({ played75Percent: true });
-    } else if (percentagePlayed === 100 && !played100Percent) {
+    }
+
+    if (percentagePlayed === 100 && !played100Percent) {
       analytics.trackEvent('play:100', articleId, audiofileId);
       this.setState({ played100Percent: true });
     }
