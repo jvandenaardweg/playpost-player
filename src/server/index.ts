@@ -77,14 +77,15 @@ app.get('/ping', rateLimited(20), (req: Request, res: Response) => {
 /**
  * Method to track some anonymous analytics.
  *
- * We'll rate limit this tracking to 60 per minute, that's 1 per second, seems to be enough and prevent flooding.
+ * We'll rate limit this tracking to 60 per minute, per "anonymous" user, that's 1 per second, seems to be enough and prevent flooding.
  */
 app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
-    const { articleId, audiofileId, event } = req.body;
+    const { articleId, audiofileId, event, device } = req.body;
     const allowedEvents = ['view', 'play:begin', 'play:end', 'play:25', 'play:75', 'play:100', 'playlist:add', 'pause'];
+    const allowedDevices = ['mobile', 'desktop', 'tablet', 'wearable', 'smarttv', 'console'];
 
     if (!isUUID.v4(articleId)) {
       const errorMessage = 'articleId is not a valid UUID.';
@@ -116,6 +117,16 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       });
     }
 
+    if (!allowedDevices.includes(device)) {
+      const errorMessage = `device is not valid. Please one of: ${allowedDevices.join(', ')}`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
+      return res.status(400).json({
+        message: errorMessage
+      });
+    }
+
     // All ok, proceed
     const ipAddress = getRealUserIpAddress(req);
     const geo = geoipLite.lookup(ipAddress);
@@ -124,7 +135,7 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     const city = geo ? geo.city : null;
     const anonymousUserId = getAnonymousUserId(req); // Make user unique for each publisher
     const value = 1; // keep value here, so it's not "hackable"
-    const createdAt = new Date();
+    const timestamp = new Date().getTime();
 
     const eventData = {
       articleId,
@@ -135,7 +146,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       city,
       anonymousUserId,
       value,
-      createdAt
+      timestamp,
+      device
     }
 
     logger.info(loggerPrefix, 'Track this: ', eventData);

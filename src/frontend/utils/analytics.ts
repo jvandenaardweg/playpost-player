@@ -1,9 +1,26 @@
+import {
+  isMobileOnly,
+  isTablet,
+  isSmartTV,
+  isWearable,
+  isConsole
+} from "react-device-detect";
+
 export const trackEvent = (event: string, articleId: string, audiofileId: string, value?: any) => {
+  const device =
+  (isMobileOnly) ? 'mobile' :
+  (isTablet) ? 'tablet' :
+  (isSmartTV) ? 'smarttv' :
+  (isWearable) ? 'wearable' :
+  (isConsole) ? 'console' :
+  'desktop';
+
   const eventData = {
     event,
     articleId,
     audiofileId,
-    value
+    value,
+    device
   }
 
   return fetch(
