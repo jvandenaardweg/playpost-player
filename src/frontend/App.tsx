@@ -2,6 +2,7 @@ import React from 'react';
 import './App.scss';
 import { Player, PlayerThemeOptions, PlayerType, PlayerOptions } from './components/Player';
 import { Api } from '../@types/playpost-api';
+import md5 from 'md5';
 
 const App: React.FC = () => {
   /**
@@ -100,6 +101,9 @@ const App: React.FC = () => {
   const playerType = getUserDefinedPlayerType()
   const playerOptions = getUserDefinedPlayerOptions()
 
+  // Generate a sessionId so we can keep track of player sessions for statistics
+  const sessionId = md5(new Date().getTime().toString() + Math.floor((Math.random() * 1000000)));
+
   if (!article) {
     return (
       <div className="App">
@@ -131,6 +135,7 @@ const App: React.FC = () => {
         themeOptions={playerThemeOptions}
         playerOptions={playerOptions}
         type={playerType}
+        sessionId={sessionId}
       />
     </div>
   );

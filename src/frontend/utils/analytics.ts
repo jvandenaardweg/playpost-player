@@ -6,7 +6,7 @@ import {
   isConsole
 } from "react-device-detect";
 
-export const trackEvent = (event: string, articleId: string, audiofileId: string, value?: any) => {
+export const trackEvent = (event: string, articleId: string, audiofileId: string, sessionId: string, value?: any) => {
   const device =
   (isMobileOnly) ? 'mobile' :
   (isTablet) ? 'tablet' :

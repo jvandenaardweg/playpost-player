@@ -55,6 +55,7 @@ interface Props {
   themeOptions: PlayerThemeOptions;
   playerOptions: PlayerOptions;
   type: PlayerType;
+  sessionId: string;
 }
 
 interface State {
@@ -76,9 +77,13 @@ interface State {
   playedSeconds: number;
   loaded: number;
   loadedSeconds: number;
+  played1Percent: boolean;
+  played5Percent: boolean;
   played25Percent: boolean;
   played50Percent: boolean;
   played75Percent: boolean;
+  played95Percent: boolean;
+  played99Percent: boolean;
   played100Percent: boolean;
 }
 
@@ -102,9 +107,13 @@ export class Player extends React.PureComponent<Props, State> {
     playedSeconds: 0,
     loaded: 0,
     loadedSeconds: 0,
+    played1Percent: false,
+    played5Percent: false,
     played25Percent: false,
     played50Percent: false,
     played75Percent: false,
+    played95Percent: false,
+    played99Percent: false,
     played100Percent: false
   }
 
@@ -117,7 +126,7 @@ export class Player extends React.PureComponent<Props, State> {
   private playerjsReceiver = new playerjs.Receiver();
 
   componentDidMount() {
-    const { audiofileLength, themeOptions, type, playerOptions, audiofileId, articleId } = this.props
+    const { audiofileLength, themeOptions, type, playerOptions, audiofileId, articleId, sessionId } = this.props
     const platform = getPlatform(window.navigator)
 
     this.setState({ duration: audiofileLength, platform }, () => {
@@ -136,7 +145,7 @@ export class Player extends React.PureComponent<Props, State> {
     this.setupPlayerJSInteractions()
     this.setupPostMessageResizing()
     this.sendResizePostMessage()
-    analytics.trackEvent('view', articleId, audiofileId);
+    analytics.trackEvent('view', articleId, audiofileId, sessionId);
   }
 
   componentWillUnmount() {
@@ -259,11 +268,11 @@ export class Player extends React.PureComponent<Props, State> {
 
   playAudio = () => {
     const { audiofileUrl } = this.state
-    const { articleId, audiofileId } = this.props
+    const { articleId, audiofileId, sessionId } = this.props
 
     const isLoading = !audiofileUrl && !this.state.isLoading;
 
-    analytics.trackEvent('play:begin', articleId, audiofileId);
+    analytics.trackEvent('play:begin', articleId, audiofileId, sessionId);
 
     this.setState({ isPlaying: true, isLoading, audiofileUrl: this.props.audiofileUrl })
   }
@@ -285,8 +294,8 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   pauseAudio = () => {
-    const { articleId, audiofileId } = this.props
-    analytics.trackEvent('pause', articleId, audiofileId)
+    const { articleId, audiofileId, sessionId } = this.props
+    analytics.trackEvent('pause', articleId, audiofileId, sessionId)
     this.setState({ isPlaying: false, isLoading: false })
   }
 
@@ -371,39 +380,60 @@ export class Player extends React.PureComponent<Props, State> {
    * Method to track how far the user played the track.
    */
   trackPlayerPercentage = (playedSeconds: number, duration: number) => {
-    const { articleId, audiofileId } = this.props;
-    const { played25Percent, played50Percent, played75Percent, played100Percent } = this.state;
+    const { articleId, audiofileId, sessionId } = this.props;
+    const { played1Percent, played5Percent, played25Percent, played50Percent, played75Percent, played95Percent, played99Percent, played100Percent } = this.state;
 
     const percentagePlayed = parseFloat(((playedSeconds / duration) * 100).toFixed(0));
 
+    // 'play:1', 'play:5', 'play:25', 'play:50', 'play:75', 'play:95', 'play:99', 'play:100'
+    if (percentagePlayed >= 1 && !played1Percent) {
+      analytics.trackEvent('play:1', articleId, audiofileId, sessionId);
+      this.setState({ played1Percent: true });
+    }
+
+    if (percentagePlayed >= 5 && !played5Percent) {
+      analytics.trackEvent('play:5', articleId, audiofileId, sessionId);
+      this.setState({ played5Percent: true });
+    }
+
     if (percentagePlayed >= 25 && !played25Percent) {
-      analytics.trackEvent('play:25', articleId, audiofileId);
+      analytics.trackEvent('play:25', articleId, audiofileId, sessionId);
       this.setState({ played25Percent: true });
     }
 
     if (percentagePlayed >= 50 && !played50Percent) {
-      analytics.trackEvent('play:50', articleId, audiofileId);
+      analytics.trackEvent('play:50', articleId, audiofileId, sessionId);
       this.setState({ played50Percent: true });
     }
 
     if (percentagePlayed >= 75 && !played75Percent) {
-      analytics.trackEvent('play:75', articleId, audiofileId);
+      analytics.trackEvent('play:75', articleId, audiofileId, sessionId);
       this.setState({ played75Percent: true });
     }
 
+    if (percentagePlayed >= 95 && !played95Percent) {
+      analytics.trackEvent('play:95', articleId, audiofileId, sessionId);
+      this.setState({ played95Percent: true });
+    }
+
+    if (percentagePlayed >= 99 && !played99Percent) {
+      analytics.trackEvent('play:99', articleId, audiofileId, sessionId);
+      this.setState({ played99Percent: true });
+    }
+
     if (percentagePlayed === 100 && !played100Percent) {
-      analytics.trackEvent('play:100', articleId, audiofileId);
+      analytics.trackEvent('play:100', articleId, audiofileId, sessionId);
       this.setState({ played100Percent: true });
     }
 
   }
 
   handleOnEnded = () => {
-    const { articleId, audiofileId } = this.props;
+    const { articleId, audiofileId, sessionId } = this.props;
     console.log('handleOnEnded')
     this.playerjsReceiver.emit('ended')
     this.setState({ isPlaying: false })
-    analytics.trackEvent('play:end', articleId, audiofileId);
+    analytics.trackEvent('play:end', articleId, audiofileId, sessionId);
   }
 
   handleOnDuration = (duration: number) => {
@@ -443,7 +473,7 @@ export class Player extends React.PureComponent<Props, State> {
   }
 
   handleOnClickSave = () => {
-    const { articleId, audiofileId } = this.props;
+    const { articleId, audiofileId, sessionId } = this.props;
     // const appStoreUrl = platform === 'ios' ? URL_APPLE_APP_STORE : platform === 'android' ? URL_GOOGLE_PLAY_STORE : ''
 
     // this.setState({ showAppStoresModal: true })
@@ -455,7 +485,7 @@ export class Player extends React.PureComponent<Props, State> {
     //   })
     // }
 
-    analytics.trackEvent('playlist:add', articleId, audiofileId)
+    analytics.trackEvent('playlist:add', articleId, audiofileId, sessionId)
   }
 
   handleOnClickCloseAppStoresModal = () => {

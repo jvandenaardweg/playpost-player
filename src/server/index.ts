@@ -17,6 +17,7 @@ import { version } from '../../package.json'
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { getAnonymousUserId } from './utils/anonymous-id';
+import md5 from 'md5';
 
 logger.info('Server Init: Version: ', version)
 
@@ -83,8 +84,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
-    const { articleId, audiofileId, event, device } = req.body;
-    const allowedEvents = ['view', 'play:begin', 'play:end', 'play:25', 'play:50', 'play:75', 'play:100', 'playlist:add', 'pause'];
+    const { articleId, audiofileId, event, device, sessionId } = req.body;
+    const allowedEvents = ['view', 'play:begin', 'play:end', 'play:1', 'play:5', 'play:25', 'play:50', 'play:75', 'play:95', 'play:99', 'play:100', 'playlist:add', 'pause'];
     const allowedDevices = ['mobile', 'desktop', 'tablet', 'wearable', 'smarttv', 'console'];
 
     if (!isUUID.v4(articleId)) {
@@ -127,6 +128,27 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       });
     }
 
+    if (!allowedDevices.includes(device)) {
+      const errorMessage = `device is not valid. Please one of: ${allowedDevices.join(', ')}`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
+      return res.status(400).json({
+        message: errorMessage
+      });
+    }
+
+    // "sessionId" should be an md5 string
+    if (!sessionId.match(/^[a-f0-9]{32}$/)) {
+      const errorMessage = `sessionId is invalid`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
+      return res.status(400).json({
+        message: errorMessage
+      });
+    }
+
     // All ok, proceed
     const ipAddress = getRealUserIpAddress(req);
     const geo = geoipLite.lookup(ipAddress);
@@ -147,10 +169,13 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       anonymousUserId,
       value,
       timestamp,
-      device
+      device,
+      sessionId
     }
 
     logger.info(loggerPrefix, 'Track this: ', eventData);
+
+    // TODO: store in pubsub so we can build a queue not losing any data when our processor/api is down
 
     return res.json({
       message: 'OK'
