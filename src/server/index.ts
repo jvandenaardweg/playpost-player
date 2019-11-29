@@ -17,7 +17,6 @@ import { version } from '../../package.json'
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { getAnonymousUserId } from './utils/anonymous-id';
-import md5 from 'md5';
 
 logger.info('Server Init: Version: ', version)
 
