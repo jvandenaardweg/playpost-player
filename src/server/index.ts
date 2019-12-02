@@ -138,7 +138,7 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     }
 
     // "sessionId" should be an md5 string
-    if (!sessionId.match(/^[a-f0-9]{32}$/)) {
+    if (!sessionId || !sessionId.match(/^[a-f0-9]{32}$/)) {
       const errorMessage = `sessionId is invalid`;
 
       logger.error(loggerPrefix, errorMessage, req.body);

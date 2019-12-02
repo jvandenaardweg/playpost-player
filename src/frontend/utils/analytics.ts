@@ -20,7 +20,8 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
     articleId,
     audiofileId,
     value,
-    device
+    device,
+    sessionId
   }
 
   return fetch(
