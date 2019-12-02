@@ -245,7 +245,10 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
       return res.send(cachedPage)
     }
 
-    const { article, audiofile } = await api.cachedFindArticleById(articleId, audiofileId);
+    // Get the requester his ip address, so we can re-use that for our API rate limiting
+    const requesterIpAddress = getRealUserIpAddress(req);
+
+    const { article, audiofile } = await api.cachedFindArticleById(articleId, audiofileId, requesterIpAddress);
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
     const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {

@@ -22,7 +22,7 @@ const cachedPromises: CachedPromise = {};
  * @param articleId
  * @param audiofileId
  */
-export const cachedFindArticleById = async (articleId: string, audiofileId: string): Promise<FindArticleByIdResult> => {
+export const cachedFindArticleById = async (articleId: string, audiofileId: string, requesterIpAddress: string): Promise<FindArticleByIdResult> => {
   const id = articleId + audiofileId;
 
   // Re-use the promise if it exists
@@ -32,7 +32,7 @@ export const cachedFindArticleById = async (articleId: string, audiofileId: stri
   }
 
   // Add the promise if it does not exist yet
-  const promise = findArticleById(articleId, audiofileId)
+  const promise = findArticleById(articleId, audiofileId, requesterIpAddress)
   .then((result) => {
     // Delete promise from cache if it succeeds
     delete cachedPromises[id]
@@ -54,14 +54,15 @@ export const cachedFindArticleById = async (articleId: string, audiofileId: stri
  * @param articleId
  * @param audiofileId
  */
-export const findArticleById = async (articleId: string, audiofileId: string): Promise<FindArticleByIdResult> => {
+export const findArticleById = async (articleId: string, audiofileId: string, requesterIpAddress: string): Promise<FindArticleByIdResult> => {
   logger.info(articleId, `Getting article from API...`);
 
   const response = await nodeFetch(`${process.env.API_URL}/v1/articles/${articleId}`, {
     method: 'get',
     headers: {
       'X-Api-Key': process.env.API_KEY || '',
-      'X-Api-Secret': process.env.API_SECRET || ''
+      'X-Api-Secret': process.env.API_SECRET || '',
+      'X-Forwarded-For': requesterIpAddress // Add this header, so we can re-use our API rate limiting properly
     }
   })
 
