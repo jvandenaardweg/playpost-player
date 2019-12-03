@@ -32,15 +32,16 @@ const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true
 app.use(cookieParser())
 
 // Set the anonymousId cookie to track unique users anonymously
+// Set the sessionId cookie to track sessions of users
 // To identify individual users behind a shared ip address
-// Save the cookie for 30 days
+// Save the cookie for a year
 // Important: use this app.use BEFORE our rate limiter, so our rate limiter can use the same cookie value
 app.use('*', (req: Request, res: Response, next: NextFunction) => {
   const currentAnonymousIdCookie = req.cookies.anonymousId;
 
   // If there is no cookie yet, create one
   if (!currentAnonymousIdCookie) {
-    const expiresInDays = 30;
+    const expiresInDays = 365;
     const currentDate = new Date();
     const expires = new Date(currentDate.setTime(currentDate.getTime() + (expiresInDays * 24 * 60 * 60 * 1000)))
     const valueToHash = crypto.randomBytes(32).toString('hex'); // Generate some random value
