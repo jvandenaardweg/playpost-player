@@ -5,10 +5,13 @@ import ejs from 'ejs';
 import NodeCache from 'node-cache';
 import nodeFetch from 'node-fetch';
 import serveStatic from 'serve-static';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
+import crypto from 'crypto';
+import md5 from 'md5';
 
 import { logger } from './utils/logger';
 
@@ -16,7 +19,6 @@ import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
-import { getAnonymousUserId } from './utils/anonymous-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -27,11 +29,42 @@ const CACHE_TTL = 60 * 60 * 24;
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
 
+app.use(cookieParser())
+
+// Set the anonymousId cookie to track unique users anonymously
+// To identify individual users behind a shared ip address
+// Save the cookie for 30 days
+// Important: use this app.use BEFORE our rate limiter, so our rate limiter can use the same cookie value
+app.use('*', (req: Request, res: Response, next: NextFunction) => {
+  const currentAnonymousIdCookie = req.cookies.anonymousId;
+
+  // If there is no cookie yet, create one
+  if (!currentAnonymousIdCookie) {
+    const expiresInDays = 30;
+    const currentDate = new Date();
+    const expires = new Date(currentDate.setTime(currentDate.getTime() + (expiresInDays * 24 * 60 * 60 * 1000)))
+    const valueToHash = crypto.randomBytes(32).toString('hex'); // Generate some random value
+    const hash = md5(valueToHash); // md5 it so we can identify it as an md5 value, not just some random value
+
+    const cookieConfig = {
+      expires,
+      secure: process.env.NODE_ENV === 'production', // Only use secure in production, as we have https there
+      httpOnly: true
+    }
+
+    // Send the cookie to our user
+    res.cookie('anonymousId' , hash, cookieConfig)
+  }
+
+  // Continue with the request
+  next();
+});
+
 const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
   max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
-  keyGenerator: (req: Request) => getAnonymousUserId(req),
+  keyGenerator: (req: Request) => req.cookies.anonymousId,
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
@@ -39,7 +72,7 @@ const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
     // @ts-ignore
     const tryAfterDate = req.rateLimit.resetTime
 
-    logger.warn(loggerPrefix, 'Rated limited: ', `Key: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
+    logger.warn(loggerPrefix, 'Rated limited: ', `anonymousId: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
     return res.status(429).send(`Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again after: ${tryAfterDate}`);
   }
 });
@@ -49,6 +82,7 @@ app.use(helmet({
 }))
 
 app.use(express.json())
+
 
 app.set('etag', false)
 
@@ -151,10 +185,10 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     // All ok, proceed
     const ipAddress = getRealUserIpAddress(req);
     const geo = geoipLite.lookup(ipAddress);
-    const countryCode = geo ? geo.country : null;
-    const regionCode = geo ? geo.region : null;
+    const countryCode = geo ? geo.country : null; // US, NL, UK
+    const regionCode = geo ? geo.region : null; // TX, NH
     const city = geo ? geo.city : null;
-    const anonymousUserId = getAnonymousUserId(req); // Make user unique for each publisher
+    const anonymousUserId = req.cookies.anonymousId;
     const value = 1; // keep value here, so it's not "hackable"
     const timestamp = new Date().getTime();
 
