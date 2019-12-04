@@ -3,6 +3,16 @@ import './App.scss';
 import { Player, PlayerThemeOptions, PlayerType, PlayerOptions } from './components/Player';
 import { Api } from '../@types/playpost-api';
 import md5 from 'md5';
+import * as Sentry from '@sentry/browser';
+import { version } from '../../package.json';
+
+// Error tracking in the player
+Sentry.init({
+  dsn: "https://bbd40ef86777499e9ed44a185b87069a@sentry.io/1844201",
+  enabled: process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'test', // Do not run on your local machine
+  environment: process.env.NODE_ENV,
+  release: version ? version : undefined,
+});
 
 const App: React.FC = () => {
   /**

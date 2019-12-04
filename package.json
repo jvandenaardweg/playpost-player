@@ -9,6 +9,7 @@
   "dependencies": {
     "@babel/core": "7.6.0",
     "@google-cloud/pubsub": "^1.1.5",
+    "@sentry/browser": "^5.9.1",
     "@sentry/integrations": "^5.8.0",
     "@sentry/node": "^5.9.0",
     "@svgr/webpack": "4.3.2",
