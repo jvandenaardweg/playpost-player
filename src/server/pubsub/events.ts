@@ -1,7 +1,5 @@
 import { PubSub } from '@google-cloud/pubsub';
 
-import Sentry from '@sentry/node';
-
 import { getGoogleCloudCredentials } from '../utils/google-cloud-credentials';
 import { logger } from '../utils/logger';
 
@@ -45,11 +43,7 @@ export async function publishEvent(event: PlayerEvent) {
 
     return result;
   } catch (err) {
-    Sentry.withScope(scope => {
-      scope.setExtra('event', event);
-      scope.setLevel(Sentry.Severity.Critical);
-      Sentry.captureException(err);
-    });
+
     throw err;
   }
 }
