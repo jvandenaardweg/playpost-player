@@ -12,6 +12,7 @@ import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
 import crypto from 'crypto';
 import md5 from 'md5';
+import { Sentry } from './sentry';
 
 import { logger } from './utils/logger';
 
@@ -19,8 +20,11 @@ import { version } from '../../package.json'
 
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
+import { publishEvent } from './pubsub/events';
 
 logger.info('Server Init: Version: ', version)
+
+logger.info('Server Init: Sentry version: ', Sentry.SDK_VERSION)
 
 const app = express();
 
@@ -28,6 +32,11 @@ const PLAYER_BASE_URL = process.env.PLAYER_BASE_URL || 'https://player.playpost.
 const CACHE_TTL = 60 * 60 * 24;
 
 const cache = new NodeCache( { stdTTL: 60, checkperiod: 60, deleteOnExpire: true } );
+
+app.use(Sentry.Handlers.requestHandler());
+
+// The error handler must be before any other error middleware
+app.use(Sentry.Handlers.errorHandler());
 
 app.use(cookieParser())
 
@@ -114,7 +123,7 @@ app.get('/ping', rateLimited(20), (req: Request, res: Response) => {
  *
  * We'll rate limit this tracking to 60 per minute, per "anonymous" user, that's 1 per second, seems to be enough and prevent flooding.
  */
-app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
+app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
@@ -127,6 +136,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
 
       logger.error(loggerPrefix, errorMessage, req.body);
 
+      Sentry.captureMessage(errorMessage);
+
       return res.status(400).json({
         message: errorMessage
       });
@@ -136,6 +147,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       const errorMessage = 'audiofileId is not a valid UUID.';
 
       logger.error(loggerPrefix, errorMessage, req.body);
+
+      Sentry.captureMessage(errorMessage);
 
       return res.status(400).json({
         message: errorMessage
@@ -147,15 +160,7 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
 
       logger.error(loggerPrefix, errorMessage, req.body);
 
-      return res.status(400).json({
-        message: errorMessage
-      });
-    }
-
-    if (!allowedDevices.includes(device)) {
-      const errorMessage = `device is not valid. Please one of: ${allowedDevices.join(', ')}`;
-
-      logger.error(loggerPrefix, errorMessage, req.body);
+      Sentry.captureMessage(errorMessage);
 
       return res.status(400).json({
         message: errorMessage
@@ -166,6 +171,20 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
       const errorMessage = `device is not valid. Please one of: ${allowedDevices.join(', ')}`;
 
       logger.error(loggerPrefix, errorMessage, req.body);
+
+      Sentry.captureMessage(errorMessage);
+
+      return res.status(400).json({
+        message: errorMessage
+      });
+    }
+
+    if (!allowedDevices.includes(device)) {
+      const errorMessage = `device is not valid. Please one of: ${allowedDevices.join(', ')}`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
+      Sentry.captureMessage(errorMessage);
 
       return res.status(400).json({
         message: errorMessage
@@ -178,6 +197,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
 
       logger.error(loggerPrefix, errorMessage, req.body);
 
+      Sentry.captureMessage(errorMessage);
+
       return res.status(400).json({
         message: errorMessage
       });
@@ -186,8 +207,8 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
     // All ok, proceed
     const ipAddress = getRealUserIpAddress(req);
     const geo = geoipLite.lookup(ipAddress);
-    const countryCode = geo ? geo.country : null; // US, NL, UK
-    const regionCode = geo ? geo.region : null; // TX, NH
+    const countryCode = geo ? geo.country.toLowerCase() : null; // US, NL, UK
+    const regionCode = geo ? geo.region.toLowerCase() : null; // TX, NH
     const city = geo ? geo.city : null;
     const anonymousUserId = req.cookies.anonymousId;
     const value = 1; // keep value here, so it's not "hackable"
@@ -209,13 +230,31 @@ app.post('/v1/track', rateLimited(60), (req: Request, res: Response) => {
 
     logger.info(loggerPrefix, 'Track this: ', eventData);
 
-    // TODO: store in pubsub so we can build a queue not losing any data when our processor/api is down
+    try {
+      const result = await publishEvent(eventData);
 
-    return res.json({
-      message: 'OK'
-    })
+      return res.json({
+        message: 'OK',
+        result
+      })
+    } catch (err) {
+      Sentry.withScope(scope => {
+        scope.setExtra('eventData', eventData);
+        scope.setLevel(Sentry.Severity.Critical);
+        Sentry.captureException(err);
+      });
+
+      return res.status(500).json({
+        message: err.message
+      })
+    }
+
   } catch (err) {
     logger.error(loggerPrefix, err.message, req.body);
+
+    Sentry.withScope(scope => {
+      Sentry.captureException(err);
+    });
 
     return res.status(500).json({
       message: err.message
@@ -243,6 +282,8 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
 
     logger.error(loggerPrefix, errorMessage)
 
+    Sentry.captureMessage(errorMessage);
+
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
       description: errorMessage
@@ -255,6 +296,8 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
     const errorMessage = `Please given a valid audiofile ID for the article. ${audiofileId} is not a valid audiofile ID.`
 
     logger.error(loggerPrefix, errorMessage)
+
+    Sentry.captureMessage(errorMessage);
 
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
       title: 'Oops!',
@@ -309,6 +352,15 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
 
     const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
     const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
+
+    Sentry.withScope(scope => {
+      Sentry.captureException(err);
+      scope.setExtra('isApiUnavailable', isApiUnavailable);
+      scope.setExtra('errorMessage', errorMessage);
+      scope.setExtra('title', title);
+      scope.setExtra('description', description);
+      Sentry.captureException(err);
+    });
 
     // TODO: make sure error.ejs is in build-server
     const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
