@@ -42,3 +42,19 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+
+
+## Cookies
+The `anonymousId` cookie collects and anonymizes End User IP addresses using a one-way hash of certain values so they cannot be personally identified. The cookie has an expiration date of 365 days.
+
+The `anonymousId` cookie may be used to identify individual events, such as "unique plays", for Playpost customers.
+
+The `anonymousId` cookie also helps Playpost detect malicious visitors and minimizes blocking legitimate users. It may be placed on your device to identify individual clients behind a shared IP address. It is necessary for supporting Playpost's security features.
+
+The `anonymousId` cookie does not:
+- allow for cross-site tracking,
+- follow users from site to site,
+- correspond to any user ID on our web applications
+
+It is completely anonymous. And within the boundaries of GDPR.
