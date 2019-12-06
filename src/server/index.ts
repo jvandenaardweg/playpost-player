@@ -21,6 +21,7 @@ import { version } from '../../package.json'
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { publishEvent } from './pubsub/events';
+import { getAnonymousUserId } from './utils/anonymous-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -74,7 +75,11 @@ const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
   max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
-  keyGenerator: (req: Request) => req.cookies.anonymousId,
+  keyGenerator: (req: Request) => {
+    // anonymousId cookie could be undefined
+    // Make sure we fallback to the users other anonymous id
+    return req.cookies.anonymousId || getAnonymousUserId(req)
+  },
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
