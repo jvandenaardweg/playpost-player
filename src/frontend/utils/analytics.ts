@@ -15,7 +15,7 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
   (isConsole) ? 'console' :
   'desktop';
 
-  const referrer = document.referrer;
+  const referrer = document.referrer ? document.referrer : null;
 
   const eventData = {
     event,
