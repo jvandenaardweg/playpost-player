@@ -11,6 +11,7 @@ import ExpressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
 import isUrl from 'is-url';
+import compression from 'compression';
 
 import { Sentry } from './sentry';
 
@@ -22,6 +23,7 @@ import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { publishEvent } from './pubsub/events';
 import { getAnonymousUserId, createAnonymousUserId } from './utils/anonymous-user-id';
+import { getCacheKey } from './utils/cache';
 
 logger.info('Server Init: Version: ', version)
 
@@ -38,6 +40,8 @@ app.use(Sentry.Handlers.requestHandler());
 
 // The error handler must be before any other error middleware
 app.use(Sentry.Handlers.errorHandler());
+
+app.use(compression())
 
 app.use(cookieParser())
 
@@ -117,6 +121,21 @@ app.use('/oembed.png', serveStatic(path.join(__dirname, '../../../build-frontend
 
 app.get('/ping', rateLimited(20), (req: Request, res: Response) => {
   return res.send('pong');
+});
+
+/**
+ * Endpoint to programatically delete it's cache.
+ * For example: when a user updates article details or changes his audiofile.
+ */
+app.delete('/v1/cache/articles/:articleId/audiofiles/:audiofileId', (req: Request, res: Response) => {
+  const cacheKey = getCacheKey(req.params.articleId, req.params.audiofileId);
+  const result = cache.del(cacheKey);
+
+  if (!result) {
+    return res.status(409).send('Nothing deleted.');
+  }
+
+  return res.status(200).send('OK');
 });
 
 /**
@@ -323,7 +342,7 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
   }
 
   try {
-    const cacheKey = `v1/articles/${articleId}/audiofiles/${audiofileId}`;
+    const cacheKey = getCacheKey(articleId, audiofileId);
 
     if (deleteCache) {
       logger.info(loggerPrefix, `Removing cache.`)
