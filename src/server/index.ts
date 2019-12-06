@@ -10,8 +10,6 @@ import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
-import crypto from 'crypto';
-import md5 from 'md5';
 import { Sentry } from './sentry';
 
 import { logger } from './utils/logger';
@@ -21,7 +19,7 @@ import { version } from '../../package.json'
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { publishEvent } from './pubsub/events';
-import { getAnonymousUserId } from './utils/anonymous-id';
+import { getAnonymousUserId, createAnonymousUserId } from './utils/anonymous-user-id';
 
 logger.info('Server Init: Version: ', version)
 
@@ -41,21 +39,21 @@ app.use(Sentry.Handlers.errorHandler());
 
 app.use(cookieParser())
 
-// Set the anonymousId cookie to track unique users anonymously
+// Set the anonymousUserId cookie to track unique users anonymously
 // Set the sessionId cookie to track sessions of users
 // To identify individual users behind a shared ip address
 // Save the cookie for a year
 // Important: use this app.use BEFORE our rate limiter, so our rate limiter can use the same cookie value
 app.use('*', (req: Request, res: Response, next: NextFunction) => {
-  const currentAnonymousIdCookie = req.cookies.anonymousId;
+  const currentAnonymousUserIdCookie = req.cookies.anonymousUserId;
 
   // If there is no cookie yet, create one
-  if (!currentAnonymousIdCookie) {
+  if (!currentAnonymousUserIdCookie) {
+    const anonymousUserId = createAnonymousUserId();
+
     const expiresInDays = 365;
     const currentDate = new Date();
     const expires = new Date(currentDate.setTime(currentDate.getTime() + (expiresInDays * 24 * 60 * 60 * 1000)))
-    const valueToHash = crypto.randomBytes(32).toString('hex'); // Generate some random value
-    const hash = md5(valueToHash); // md5 it so we can identify it as an md5 value, not just some random value
 
     const cookieConfig = {
       expires,
@@ -64,7 +62,7 @@ app.use('*', (req: Request, res: Response, next: NextFunction) => {
     }
 
     // Send the cookie to our user
-    res.cookie('anonymousId' , hash, cookieConfig)
+    res.cookie('anonymousUserId' , anonymousUserId, cookieConfig)
   }
 
   // Continue with the request
@@ -75,11 +73,7 @@ const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
   max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
-  keyGenerator: (req: Request) => {
-    // anonymousId cookie could be undefined
-    // Make sure we fallback to the users other anonymous id
-    return req.cookies.anonymousId || getAnonymousUserId(req)
-  },
+  keyGenerator: (req: Request) => getAnonymousUserId(req),
   handler: function (req: Request, res: Response, next: NextFunction) {
     const rateLimitedKey = this.keyGenerator && this.keyGenerator(req, res);
     const loggerPrefix = req.path + ' -';
@@ -87,7 +81,7 @@ const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
     // @ts-ignore
     const tryAfterDate = req.rateLimit.resetTime
 
-    logger.warn(loggerPrefix, 'Rated limited: ', `anonymousId: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
+    logger.warn(loggerPrefix, 'Rated limited: ', `anonymousUserId: ${rateLimitedKey}`, `- IP address: ${getRealUserIpAddress(req)}`);
     return res.status(429).send(`Ho, ho. Slow down! It seems like you are doing too many requests. Please cooldown and try again after: ${tryAfterDate}`);
   }
 });
@@ -215,7 +209,7 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
     const countryCode = geo ? geo.country.toLowerCase() : null; // US, NL, UK
     const regionCode = geo ? geo.region.toLowerCase() : null; // TX, NH
     const city = geo ? geo.city : null;
-    const anonymousUserId = req.cookies.anonymousId;
+    const anonymousUserId = getAnonymousUserId(req);
     const value = 1; // keep value here, so it's not "hackable"
     const timestamp = new Date().getTime();
 
