@@ -145,7 +145,7 @@ app.delete('/v1/cache/articles/:articleId/audiofiles/:audiofileId', (req: Reques
     return res.status(409).send('Nothing deleted.');
   }
 
-  logger.error(loggerPrefix, 'Deleted cache for:', req.params);
+  logger.info(loggerPrefix, 'Deleted cache for:', req.params);
 
   return res.status(200).send('OK');
 });
