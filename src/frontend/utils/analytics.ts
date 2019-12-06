@@ -15,7 +15,9 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
   (isConsole) ? 'console' :
   'desktop';
 
-  const referrer = document.referrer ? document.referrer : null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrerParam = urlParams.get('referrer'); // Embedly returns this as the referrer, so prefer that
+  const referrer = (referrerParam) ? referrerParam : document.referrer ? document.referrer : null;
 
   const eventData = {
     event,
