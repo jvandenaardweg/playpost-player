@@ -10,6 +10,8 @@ import helmet from 'helmet';
 import ExpressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
+import isUrl from 'is-url';
+
 import { Sentry } from './sentry';
 
 import { logger } from './utils/logger';
@@ -126,7 +128,7 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
   const loggerPrefix = req.path + ' -';
 
   try {
-    const { articleId, audiofileId, event, device, sessionId } = req.body;
+    const { articleId, audiofileId, event, device, sessionId, referrer } = req.body;
     const allowedEvents = ['view', 'play:begin', 'play:end', 'play:1', 'play:5', 'play:25', 'play:50', 'play:75', 'play:95', 'play:99', 'play:100', 'playlist:add', 'pause'];
     const allowedDevices = ['mobile', 'desktop', 'tablet', 'wearable', 'smarttv', 'console'];
 
@@ -203,6 +205,19 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
       });
     }
 
+    // If a referrer is given, check if it's a valid URL
+    if (referrer && !isUrl(referrer)) {
+      const errorMessage = `referrer is not a valid URL`;
+
+      logger.error(loggerPrefix, errorMessage, req.body);
+
+      Sentry.captureMessage(errorMessage);
+
+      return res.status(400).json({
+        message: errorMessage
+      });
+    }
+
     // All ok, proceed
     const ipAddress = getRealUserIpAddress(req);
     const geo = geoipLite.lookup(ipAddress);
@@ -224,7 +239,8 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
       value,
       timestamp,
       device,
-      sessionId
+      sessionId,
+      referrer
     }
 
     logger.info(loggerPrefix, 'Track this: ', eventData);

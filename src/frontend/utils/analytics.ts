@@ -15,13 +15,16 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
   (isConsole) ? 'console' :
   'desktop';
 
+  const referrer = document.referrer;
+
   const eventData = {
     event,
     articleId,
     audiofileId,
     value,
     device,
-    sessionId
+    sessionId,
+    referrer
   }
 
   return fetch(
