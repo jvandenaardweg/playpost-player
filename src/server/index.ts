@@ -12,6 +12,7 @@ import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
 import isUrl from 'is-url';
 import compression from 'compression';
+import {UAParser} from 'ua-parser-js';
 
 import { Sentry } from './sentry';
 
@@ -161,6 +162,8 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
     const { articleId, audiofileId, event, device, sessionId, referrer } = req.body;
     const allowedEvents = ['view', 'play:begin', 'play:end', 'play:1', 'play:5', 'play:25', 'play:50', 'play:75', 'play:95', 'play:99', 'play:100', 'playlist:add', 'pause'];
     const allowedDevices = ['mobile', 'desktop', 'tablet', 'wearable', 'smarttv', 'console'];
+    const userAgent = req.headers['user-agent'];
+    const userAgentData = new UAParser(userAgent);
 
     if (!isUUID.v4(articleId)) {
       const errorMessage = 'articleId is not a valid UUID.';
@@ -257,6 +260,8 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
     const anonymousUserId = getAnonymousUserId(req);
     const value = 1; // keep value here, so it's not "hackable"
     const timestamp = new Date().getTime();
+    const os = userAgentData.getResult().os.name;
+    const browser = userAgentData.getResult().browser.name;
 
     const eventData = {
       articleId,
@@ -270,7 +275,10 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
       timestamp,
       device,
       sessionId,
-      referrer
+      referrer,
+      os,
+      browser,
+      userAgent
     }
 
     logger.info(loggerPrefix, 'Track this: ', eventData);
