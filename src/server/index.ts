@@ -128,12 +128,23 @@ app.get('/ping', rateLimited(20), (req: Request, res: Response) => {
  * For example: when a user updates article details or changes his audiofile.
  */
 app.delete('/v1/cache/articles/:articleId/audiofiles/:audiofileId', (req: Request, res: Response) => {
-  const cacheKey = getCacheKey(req.params.articleId, req.params.audiofileId);
+  const loggerPrefix = req.path + ' -';
+
+  const { articleId, audiofileId } = req.params;
+
+  const cacheKey = getCacheKey(articleId, audiofileId);
+
   const result = cache.del(cacheKey);
 
   if (!result) {
+    const errorMessage = 'Nothing deleted.';
+
+    logger.warn(loggerPrefix, errorMessage, req.params);
+
     return res.status(409).send('Nothing deleted.');
   }
+
+  logger.error(loggerPrefix, 'Deleted cache for:', req.params);
 
   return res.status(200).send('OK');
 });
