@@ -114,6 +114,11 @@ const App: React.FC = () => {
   // Generate a sessionId so we can keep track of player sessions for statistics
   const sessionId = md5(new Date().getTime().toString() + Math.floor((Math.random() * 1000000)));
 
+  // Detect if the player is embedded
+  // If it's embedded, display just the player
+  // If it's not embedded, display the article, title, description, and call to action to signup for Playpost
+  const isEmbedded = (window.top !== window.self);
+
   if (!article) {
     return (
       <div className="App">
@@ -146,6 +151,7 @@ const App: React.FC = () => {
         playerOptions={playerOptions}
         type={playerType}
         sessionId={sessionId}
+        isEmbedded={isEmbedded}
       />
     </div>
   );

@@ -56,6 +56,7 @@ interface Props {
   playerOptions: PlayerOptions;
   type: PlayerType;
   sessionId: string;
+  isEmbedded: boolean;
 }
 
 interface State {
@@ -126,7 +127,7 @@ export class Player extends React.PureComponent<Props, State> {
   private playerjsReceiver = new playerjs.Receiver();
 
   componentDidMount() {
-    const { audiofileLength, themeOptions, type, playerOptions, audiofileId, articleId, sessionId } = this.props
+    const { audiofileLength, themeOptions, type, playerOptions, audiofileId, articleId, sessionId, isEmbedded } = this.props
     const platform = getPlatform(window.navigator)
 
     this.setState({ duration: audiofileLength, platform }, () => {
@@ -140,6 +141,7 @@ export class Player extends React.PureComponent<Props, State> {
     console.log('Playpost Player Init: Using themeOptions: ', themeOptions)
     console.log('Playpost Player Init: Using duration: ', audiofileLength)
     console.log('Playpost Player Init: Using platform: ', platform)
+    console.log('Playpost Player Init: Is embedded? ', isEmbedded)
     console.log('Playpost Player Init: Type: ', type)
 
     this.setupPlayerJSInteractions()
