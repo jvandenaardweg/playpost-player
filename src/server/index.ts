@@ -361,7 +361,7 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
   }
 
   try {
-    const cacheKey = getCacheKey(articleId, audiofileId);
+    const cacheKey = getArticleCacheKey(articleId, audiofileId);
 
     if (deleteCache) {
       logger.info(loggerPrefix, `Removing cache.`)
