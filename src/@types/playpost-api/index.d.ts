@@ -15,6 +15,8 @@ export declare namespace Api {
     url: string;
     voice: Voice;
     length: number;
+    article: Article;
+    voice: Voice;
   }
 
   interface Voice {

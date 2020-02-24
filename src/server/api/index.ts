@@ -3,8 +3,12 @@ import { Api } from '../../@types/playpost-api';
 
 import { logger } from '../utils/logger';
 
-interface CachedPromise {
+interface CachedArticlePromise {
   [key: string]: Promise<FindArticleByIdResult>
+}
+
+interface CachedAudiofilePromise {
+  [key: string]: Promise<Api.Audiofile>
 }
 
 interface FindArticleByIdResult {
@@ -12,7 +16,8 @@ interface FindArticleByIdResult {
   audiofile: Api.Audiofile
 }
 
-const cachedPromises: CachedPromise = {};
+const cachedArticlePromises: CachedArticlePromise = {};
+const cachedAudiofilePromises: CachedAudiofilePromise = {};
 
 /**
  * This method makes sure we re-use any active promise already happening.
@@ -26,26 +31,52 @@ export const cachedFindArticleById = async (articleId: string, audiofileId: stri
   const id = articleId + audiofileId;
 
   // Re-use the promise if it exists
-  if (cachedPromises[id]) {
+  if (cachedArticlePromises[id]) {
     logger.info(articleId, `Promise did not resolve yet. Re-using promise...`);
-    return cachedPromises[id]
+    return cachedArticlePromises[id]
   }
 
   // Add the promise if it does not exist yet
   const promise = findArticleById(articleId, audiofileId, requesterIpAddress)
   .then((result) => {
     // Delete promise from cache if it succeeds
-    delete cachedPromises[id]
+    delete cachedArticlePromises[id]
     return result;
   })
   .catch((err) => {
     // Delete promise from cache on error
-    delete cachedPromises[id]
+    delete cachedArticlePromises[id]
     throw err;
   })
 
   // Cache the promise and re-use it until it get's fulfilled
-  return cachedPromises[id] = promise;
+  return cachedArticlePromises[id] = promise;
+}
+
+export const cachedGetAudiofileById = async (audiofileId: string, requesterIpAddress: string): Promise<Api.Audiofile> => {
+  const id = audiofileId;
+
+  // Re-use the promise if it exists
+  if (cachedAudiofilePromises[id]) {
+    logger.info(audiofileId, `Promise did not resolve yet. Re-using promise...`);
+    return cachedAudiofilePromises[id]
+  }
+
+  // Add the promise if it does not exist yet
+  const promise = getAudiofileById(audiofileId, requesterIpAddress)
+  .then((result) => {
+    // Delete promise from cache if it succeeds
+    delete cachedAudiofilePromises[id]
+    return result;
+  })
+  .catch((err) => {
+    // Delete promise from cache on error
+    delete cachedAudiofilePromises[id]
+    throw err;
+  })
+
+  // Cache the promise and re-use it until it get's fulfilled
+  return cachedAudiofilePromises[id] = promise;
 }
 
 /**
@@ -84,4 +115,24 @@ export const findArticleById = async (articleId: string, audiofileId: string, re
     article,
     audiofile
   }
+}
+
+export const getAudiofileById = async (audiofileId: string, requesterIpAddress: string): Promise<Api.Audiofile> => {
+  logger.info(audiofileId, `Getting article from API...`);
+
+  const response = await nodeFetch(`${process.env.API_URL}/v1/audiofiles/${audiofileId}`, {
+    method: 'get',
+    headers: {
+      'X-Api-Key': process.env.API_KEY || '',
+      'X-Api-Secret': process.env.API_SECRET || '',
+      'X-Forwarded-For': requesterIpAddress // Add this header, so we can re-use our API rate limiting properly
+    }
+  })
+
+  if (!response.ok) {
+    const json = await response.json()
+    throw new Error(json.message ? json.message : 'Did not got ok from api')
+  }
+
+  return response.json()
 }
