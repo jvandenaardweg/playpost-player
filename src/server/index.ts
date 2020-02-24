@@ -316,6 +316,104 @@ app.post('/v1/track', rateLimited(60), async (req: Request, res: Response) => {
 
 })
 
+app.get('/v1/audiofiles/:dirtyAudiofileId', rateLimited(20), async (req: Request, res: Response) => {
+  const { deleteCache } = req.query;
+  const { dirtyAudiofileId } = req.params;
+  const loggerPrefix = req.path + ' -';
+
+  // embed.ly returns some crappy url containing "&format=json", we remove that part here
+  const audiofileId = dirtyAudiofileId.split('&')[0];
+
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+  logger.info(loggerPrefix, 'Request query: ', req.query)
+  logger.info(loggerPrefix, 'Request referer: ', req.headers.referer)
+
+  if (!isUUID.v4(audiofileId)) {
+    const errorMessage = `Please given a valid audiofile ID for the article. ${audiofileId} is not a valid audiofile ID.`
+
+    logger.error(loggerPrefix, errorMessage)
+
+    Sentry.captureMessage(errorMessage);
+
+    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
+      title: 'Oops!',
+      description: errorMessage
+    })
+
+    return res.status(400).send(errorPageRendered);
+  }
+
+  try {
+    const cacheKey = getAudiofileCacheKey(audiofileId);
+
+    if (deleteCache) {
+      logger.info(loggerPrefix, `Removing cache.`)
+      cache.del(cacheKey)
+    }
+
+    const cachedPage = cache.get(cacheKey)
+
+    // If we have a cached version, return that
+    if (cachedPage) {
+      logger.info(loggerPrefix, `Returning cached version.`)
+      return res.send(cachedPage)
+    }
+
+    // Get the requester his ip address, so we can re-use that for our API rate limiting
+    const requesterIpAddress = getRealUserIpAddress(req);
+
+    const audiofile = await api.cachedGetAudiofileById(audiofileId, requesterIpAddress);
+
+    // Render the embed page with the article API data inside, so React can use that data to render the player
+    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
+      title: audiofile.article.title,
+      description: audiofile.article.description,
+      imageUrl: audiofile.article.imageUrl,
+      article: JSON.stringify(audiofile.article),
+      audiofile: JSON.stringify(audiofile),
+      embedUrl: `${PLAYER_BASE_URL}${req.path}`
+    })
+
+    cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
+
+    logger.info(loggerPrefix, `Returning rendered embed page.`)
+
+    // Send the HTML page to the user
+    return res.send(embedPageRendered)
+  } catch (err) {
+    const isApiUnavailable = err && err.code === 'ECONNREFUSED'
+    const errorMessage = err && err.message
+
+    logger.error(loggerPrefix, err)
+
+    const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
+    const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
+
+    Sentry.withScope(scope => {
+      Sentry.captureException(err);
+      scope.setExtra('isApiUnavailable', isApiUnavailable);
+      scope.setExtra('errorMessage', errorMessage);
+      scope.setExtra('title', title);
+      scope.setExtra('description', description);
+      Sentry.captureException(err);
+    });
+
+    // TODO: make sure error.ejs is in build-server
+    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
+      title,
+      description
+    })
+
+    if (isApiUnavailable) {
+      return res.status(503).send(errorPageRendered);
+    }
+
+    return res.status(500).send(errorPageRendered);
+  }
+
+});
+
 // Use versioning (/v1, /v2) to allow developing of new players easily and keep the older ones intact
 app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20), async (req: Request, res: Response) => {
   const { deleteCache } = req.query;
@@ -430,103 +528,7 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
 
 });
 
-app.get('/v1/audiofile/:dirtyAudiofileId', rateLimited(20), async (req: Request, res: Response) => {
-  const { deleteCache } = req.query;
-  const { dirtyAudiofileId } = req.params;
-  const loggerPrefix = req.path + ' -';
 
-  // embed.ly returns some crappy url containing "&format=json", we remove that part here
-  const audiofileId = dirtyAudiofileId.split('&')[0];
-
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-
-  logger.info(loggerPrefix, 'Request query: ', req.query)
-  logger.info(loggerPrefix, 'Request referer: ', req.headers.referer)
-
-  if (!isUUID.v4(audiofileId)) {
-    const errorMessage = `Please given a valid audiofile ID for the article. ${audiofileId} is not a valid audiofile ID.`
-
-    logger.error(loggerPrefix, errorMessage)
-
-    Sentry.captureMessage(errorMessage);
-
-    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
-      title: 'Oops!',
-      description: errorMessage
-    })
-
-    return res.status(400).send(errorPageRendered);
-  }
-
-  try {
-    const cacheKey = getAudiofileCacheKey(audiofileId);
-
-    if (deleteCache) {
-      logger.info(loggerPrefix, `Removing cache.`)
-      cache.del(cacheKey)
-    }
-
-    const cachedPage = cache.get(cacheKey)
-
-    // If we have a cached version, return that
-    if (cachedPage) {
-      logger.info(loggerPrefix, `Returning cached version.`)
-      return res.send(cachedPage)
-    }
-
-    // Get the requester his ip address, so we can re-use that for our API rate limiting
-    const requesterIpAddress = getRealUserIpAddress(req);
-
-    const audiofile = await api.cachedGetAudiofileById(audiofileId, requesterIpAddress);
-
-    // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
-      title: audiofile.article.title,
-      description: audiofile.article.description,
-      imageUrl: audiofile.article.imageUrl,
-      article: JSON.stringify(audiofile.article),
-      audiofile: JSON.stringify(audiofile),
-      embedUrl: `${PLAYER_BASE_URL}${req.path}`
-    })
-
-    cache.set(cacheKey, embedPageRendered, CACHE_TTL); // Cache for one day
-
-    logger.info(loggerPrefix, `Returning rendered embed page.`)
-
-    // Send the HTML page to the user
-    return res.send(embedPageRendered)
-  } catch (err) {
-    const isApiUnavailable = err && err.code === 'ECONNREFUSED'
-    const errorMessage = err && err.message
-
-    logger.error(loggerPrefix, err)
-
-    const title = isApiUnavailable ? 'Playpost API not available.' : 'Oops!'
-    const description = errorMessage ? errorMessage : isApiUnavailable ? 'Could not connect to the Playpost API to get the article data.' : 'An unknown error happened. Please reload the page.'
-
-    Sentry.withScope(scope => {
-      Sentry.captureException(err);
-      scope.setExtra('isApiUnavailable', isApiUnavailable);
-      scope.setExtra('errorMessage', errorMessage);
-      scope.setExtra('title', title);
-      scope.setExtra('description', description);
-      Sentry.captureException(err);
-    });
-
-    // TODO: make sure error.ejs is in build-server
-    const errorPageRendered = await ejs.renderFile(path.join(__dirname, 'pages/error.ejs'), {
-      title,
-      description
-    })
-
-    if (isApiUnavailable) {
-      return res.status(503).send(errorPageRendered);
-    }
-
-    return res.status(500).send(errorPageRendered);
-  }
-
-});
 
 app.all('/health', rateLimited(20), async (req: Request, res: Response) => {
   let apiStatus = 'fail';
