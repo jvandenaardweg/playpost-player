@@ -4,7 +4,8 @@ import { Player, PlayerThemeOptions, PlayerType, PlayerOptions } from './compone
 import { Api } from '../@types/playpost-api';
 import md5 from 'md5';
 import * as Sentry from '@sentry/browser';
-import { version } from '../../package.json';
+
+const { version } = require('../../package.json');
 
 // Error tracking in the player
 Sentry.init({

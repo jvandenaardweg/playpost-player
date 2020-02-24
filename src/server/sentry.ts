@@ -1,7 +1,7 @@
-import { version } from '../../package.json';
-
 import * as Integrations from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
+
+const { version } = require('../../package.json');
 
 Sentry.init({
   dsn: 'https://3774ad85250645f18efe40450f42bb0e@sentry.io/1844161',

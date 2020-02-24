@@ -1,19 +1,9 @@
-import {
-  isMobileOnly,
-  isTablet,
-  isSmartTV,
-  isWearable,
-  isConsole
-} from "react-device-detect";
+import { getDevice } from "./device";
+import { getPlatform } from "./platform";
 
 export const trackEvent = (event: string, articleId: string, audiofileId: string, sessionId: string, value?: any) => {
-  const device =
-  (isMobileOnly) ? 'mobile' :
-  (isTablet) ? 'tablet' :
-  (isSmartTV) ? 'smarttv' :
-  (isWearable) ? 'wearable' :
-  (isConsole) ? 'console' :
-  'desktop';
+  const device = getDevice()
+  const platform = getPlatform(window.navigator)
 
   const urlParams = new URLSearchParams(window.location.search);
   const referrerParam = urlParams.get('referrer'); // Embedly returns this as the referrer, so prefer that
@@ -25,6 +15,7 @@ export const trackEvent = (event: string, articleId: string, audiofileId: string
     audiofileId,
     value,
     device,
+    platform,
     sessionId,
     referrer
   }

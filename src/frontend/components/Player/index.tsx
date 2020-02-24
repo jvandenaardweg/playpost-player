@@ -1,9 +1,6 @@
 import React from 'react'
 import ReactPlayer from 'react-player';
 import playerjs from 'player.js';
-
-import { version } from '../../../../package.json';
-
 import * as analytics from '../../utils/analytics'
 
 import './index.scss'
@@ -14,6 +11,8 @@ import { ButtonLink } from '../Button';
 import { Modal, ModalContentAppStores } from '../Modal';
 import * as Icons from '../Icons';
 import { ProgressControl } from '../ProgressControl';
+
+const { version } = require('../../../../package.json');
 
 export enum PlayerType {
   small = 'small',

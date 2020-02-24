@@ -7,7 +7,7 @@ import nodeFetch from 'node-fetch';
 import serveStatic from 'serve-static';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import ExpressRateLimit from 'express-rate-limit';
+import expressRateLimit from 'express-rate-limit';
 import isUUID from 'is-uuid';
 import geoipLite from 'geoip-lite';
 import isUrl from 'is-url';
@@ -18,13 +18,13 @@ import { Sentry } from './sentry';
 
 import { logger } from './utils/logger';
 
-import { version } from '../../package.json'
-
 import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { publishEvent } from './pubsub/events';
 import { getAnonymousUserId, createAnonymousUserId } from './utils/anonymous-user-id';
 import { getCacheKey } from './utils/cache';
+
+const { version } = require('../../package.json');
 
 logger.info('Server Init: Version: ', version)
 
@@ -76,7 +76,7 @@ app.use('*', (req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-const rateLimited = (maxRequestsPerMinute?: number) => new ExpressRateLimit({
+const rateLimited = (maxRequestsPerMinute?: number) => expressRateLimit({
   // We'll use the in-memory cache, not Redis
   windowMs: 1 * 60 * 1000, // 1 minute
   max: maxRequestsPerMinute ? maxRequestsPerMinute : 20, // 20 requests allowed per minute, so at most: 1 per every 3 seconds, seems to be enough
