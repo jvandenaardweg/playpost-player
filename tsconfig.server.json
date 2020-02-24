@@ -21,7 +21,7 @@
     "lib": ["es5", "es6"], // es6 = typeOrm requirement
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "outDir": "./build-server",
+    "outDir": "./build-server/server", // Keep this structure so our package.json is on the same level
     "target": "es5",
     "module": "commonjs",
     "removeComments": true,
