@@ -105,17 +105,17 @@ app.set('etag', false)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './'))
 
-app.use('/static', serveStatic(path.join(__dirname, '../../../build-frontend/static'), {
+app.use('/static', serveStatic(path.join(__dirname, '../frontend/static'), {
   cacheControl: true,
   maxAge: 31536000,
 }));
 
-app.use('/favicon.ico', serveStatic(path.join(__dirname, '../../../build-frontend/favicon.ico'), {
+app.use('/favicon.ico', serveStatic(path.join(__dirname, '../frontend/favicon.ico'), {
   cacheControl: true,
   maxAge: 31536000,
 }));
 
-app.use('/oembed.png', serveStatic(path.join(__dirname, '../../../build-frontend/oembed.png'), {
+app.use('/oembed.png', serveStatic(path.join(__dirname, '../frontend/oembed.png'), {
   cacheControl: true,
   maxAge: 31536000,
 }));
@@ -366,7 +366,7 @@ app.get('/v1/audiofiles/:dirtyAudiofileId', rateLimited(20), async (req: Request
     const audiofile = await api.cachedGetAudiofileById(audiofileId, requesterIpAddress);
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
+    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../frontend/index.ejs'), {
       title: audiofile.article.title,
       description: audiofile.article.description,
       imageUrl: audiofile.article.imageUrl,
@@ -480,7 +480,7 @@ app.get('/v1/articles/:articleId/audiofiles/:dirtyAudiofileId', rateLimited(20),
     const { article, audiofile } = await api.cachedFindArticleById(articleId, audiofileId, requesterIpAddress);
 
     // Render the embed page with the article API data inside, so React can use that data to render the player
-    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../../../build-frontend/index.ejs'), {
+    const embedPageRendered = await ejs.renderFile(path.join(__dirname, '../frontend/index.ejs'), {
       title: article.title,
       description: article.description,
       imageUrl: article.imageUrl,

@@ -118,7 +118,7 @@ export const findArticleById = async (articleId: string, audiofileId: string, re
 }
 
 export const getAudiofileById = async (audiofileId: string, requesterIpAddress: string): Promise<Api.Audiofile> => {
-  logger.info(audiofileId, `Getting article from API...`);
+  logger.info(audiofileId, `Getting audiofile from API...`);
 
   const response = await nodeFetch(`${process.env.API_URL}/v1/audiofiles/${audiofileId}`, {
     method: 'get',
