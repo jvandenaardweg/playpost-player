@@ -22,7 +22,7 @@ import { getRealUserIpAddress } from './utils/ip-address';
 import * as api from './api';
 import { publishEvent } from './pubsub/events';
 import { getAnonymousUserId, createAnonymousUserId } from './utils/anonymous-user-id';
-import { getCacheKey, getArticleCacheKey, getAudiofileCacheKey } from './utils/cache';
+import { getArticleCacheKey, getAudiofileCacheKey } from './utils/cache';
 
 const { version } = require('../../package.json');
 
